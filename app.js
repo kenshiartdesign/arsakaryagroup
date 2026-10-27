@@ -1,5 +1,5 @@
 const CONFIG = {
-  GAS_URL: 'xxxx',
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbypofLYPOd7q_SBKEx7_eYXktqRp9b8cPNO4hO1yUE4BdTInnAuHRHN-LpGCqMzm2RM/exec',
   MAX_ACCURACY: 100
 };
 
