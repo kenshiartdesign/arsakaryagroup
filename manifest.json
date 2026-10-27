@@ -1,0 +1,23 @@
+{
+  "name": "ARSA KARYA GROUP",
+  "short_name": "absEnQ ARSAKARYA GROUP",
+  "description": "Aplikasi Absensi & Manajemen ARSA KARYA GROUP",
+  "start_url": "/arsakaryagroup/",
+  "scope": "/arsakaryagroup/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/arsakaryagroup/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/arsakaryagroup/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
