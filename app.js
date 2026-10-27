@@ -1092,7 +1092,7 @@ async function submitPatroliFinal() {
     
     console.log("📤 Mengirim Payload Patroli:", payload);
     
-    const response = await fetch(GAS_URL, {
+    const response = await fetch(CONFIG.GAS_URL, {
       method: 'POST',
       body: JSON.stringify(payload)
     });
@@ -1164,7 +1164,7 @@ async function submitKejadianFinal() {
     
     console.log("📤 Mengirim Payload Kejadian:", payload);
     
-    const response = await fetch(GAS_URL, {
+    const response = await fetch(CONFIG.GAS_URL, {
       method: 'POST',
       body: JSON.stringify(payload)
     });
