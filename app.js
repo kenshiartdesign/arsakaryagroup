@@ -1063,62 +1063,72 @@ async function submitPatroliFinal() {
     return;
   }
   
-  if (!fotoPatroli1 && !fotoPatroli2) {
+  if (!patroliData.foto1 && !patroliData.foto2) {
     showToast('Minimal 1 foto wajib diupload!', 'warning');
     return;
   }
+
+  // Cek apakah user sedang login
+  if (!currentUser || !currentUser.username) {
+    showToast('Sesi login habis. Silakan login ulang.', 'error');
+    return;
+  }
   
-  showToast('Sedang memproses foto & watermark...', 'info');
+  showToast('Sedang memproses & mengirim data...', 'info');
+  showLoading(true); // Tampilkan loading
   
   try {
-    let foto1Base64 = fotoPatroli1;
-    let foto2Base64 = fotoPatroli2;
-    
-    if (foto1Base64) foto1Base64 = await addTimestampWatermark(foto1Base64, '📍 PATROLI');
-    if (foto2Base64) foto2Base64 = await addTimestampWatermark(foto2Base64, '📍 PATROLI');
-    
-    // ===== PERBAIKAN: Handle Superadmin (lokasi_default kosong) =====
-    const idLokasi = currentUser.lokasi_default || 'LOK000';
-    const namaLokasi = currentUser.lokasi_nama || 'Lokasi Bebas (Superadmin)';
-    
     const payload = {
       action: 'patroli',
       username: currentUser.username,
       nama: currentUser.nama,
-      id_lokasi: idLokasi,
-      nama_lokasi: namaLokasi,
+      id_lokasi: selectedLokasi ? selectedLokasi.id_lokasi : (currentUser.lokasi_default || 'LOK000'),
+      nama_lokasi: selectedLokasi ? selectedLokasi.nama_lokasi : 'Lokasi Bebas',
       lokasi_patroli: lokasi,
       keterangan: catatan,
-      latitude: currentLat || 0,
-      longitude: currentLng || 0,
-      foto1_base64: foto1Base64,
-      foto2_base64: foto2Base64,
+      latitude: gps ? gps.lat : 0,
+      longitude: gps ? gps.lng : 0,
+      accuracy: gps ? Math.round(gps.accuracy) : 0,
+      foto1_base64: patroliData.foto1 || '',
+      foto2_base64: patroliData.foto2 || '',
       timemark: new Date().toISOString()
     };
     
-    console.log('=== DEBUG PATROLI PAYLOAD ===');
-    console.log(payload);
+    console.log("📤 Mengirim Payload Patroli:", payload); // Cek di Console Browser
     
-    const res = await fetchGAS('patroli', payload);
+    const response = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
     
-    console.log('=== DEBUG PATROLI RESPONSE ===');
-    console.log(res);
+    const result = await response.json();
+    console.log("📥 Response dari Server:", result); // Cek di Console Browser
     
-    if (res.status === 'success') {
+    if (result.status === 'success') {
       showToast('Laporan patroli berhasil dikirim!', 'success');
       backToAbsenMenu();
+      
+      // Reset Form
       document.getElementById('patroliLokasi').value = '';
       document.getElementById('patroliCatatan').value = '';
-      fotoPatroli1 = null;
-      fotoPatroli2 = null;
-      document.getElementById('btnPatroli1').innerHTML = '📷 Foto 1';
-      document.getElementById('btnPatroli2').innerHTML = '📷 Foto 2';
+      patroliData.foto1 = '';
+      patroliData.foto2 = '';
+      
+      const btn1 = document.getElementById('btnPatroli1');
+      const btn2 = document.getElementById('btnPatroli2');
+      btn1.innerHTML = '📷 Foto 1';
+      btn2.innerHTML = '📷 Foto 2';
+      btn1.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
+      btn2.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
+      
     } else {
-      showToast('Gagal: ' + res.message, 'error');
+      showToast('Gagal: ' + result.message, 'error');
     }
   } catch (e) {
-    console.error('Error submit patroli:', e);
-    showToast('Terjadi kesalahan: ' + e.message, 'error');
+    console.error('❌ Error submit patroli:', e);
+    showToast('Gagal koneksi ke server: ' + e.message, 'error');
+  } finally {
+    showLoading(false); // Sembunyikan loading
   }
 }
 
