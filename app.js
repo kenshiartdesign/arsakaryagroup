@@ -2328,7 +2328,6 @@ function doLogout() {
 }
 
 // ===== CUSTOM CONFIRMATION MODAL FUNCTIONS (SIMPLE & WORKS) =====
-
 function closeCustomConfirm() {
   const modal = document.getElementById('customConfirmModal');
   if (modal) {
@@ -2396,7 +2395,6 @@ function showCustomConfirm(title, message, subtext, callback) {
 }
 
 // ===== FUNGSI YANG MENGGUNAKAN MODAL =====
-
 function kembaliKePilihLokasi() {
   showCustomConfirm(
     'Ganti Lokasi Kerja',
@@ -2499,11 +2497,6 @@ if ('serviceWorker' in navigator) {
     });
   });
 }
-
-// ===== INIT =====
-document.addEventListener('DOMContentLoaded', () => {
-  // ... (kode init yang sudah ada) ...
-});
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
