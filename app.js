@@ -2523,24 +2523,74 @@ function doLogout() {
   );
 }
 
-// ===== AUTO UPDATE CHECKER (SETUP SEKALI, BERLAKU SELAMANYA) =====
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.ready.then(registration => {
-    registration.addEventListener('updatefound', () => {
-      const newWorker = registration.installing;
-      newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          console.log('🔄 Update tersedia! Memuat ulang...');
-          showToast('🔄 Aplikasi diperbarui ke versi terbaru...', 'info');
-          
-          // Auto reload setelah 1.5 detik
-          setTimeout(() => {
-            window.location.reload(true);
-          }, 1500);
-        }
-      });
+// ============================================
+// TRUE AUTO-UPDATE (Cek Otomatis Setiap 5 Menit)
+// ============================================
+async function cekUpdateOtomatis() {
+  try {
+    // 1. Minta info file app.js terbaru dari server (tanpa download full, cuma cek tanggal)
+    const res = await fetch('./app.js?t=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
+    const tanggalServer = res.headers.get('Last-Modified');
+    const tanggalDisimpan = localStorage.getItem('tanggalAppTerakhir_arsakarya');
+
+    // 2. Jika tanggal di server BEDA dengan yang ada di HP user, berarti ada update!
+    if (tanggalDisimpan && tanggalServer !== tanggalDisimpan) {
+      console.log('🚀 Update terdeteksi di Arsakarya Group!');
+      tampilkanNotifUpdate();
+    }
+
+    // 3. Simpan tanggal terbaru ke memori HP user
+    if (tanggalServer) {
+      localStorage.setItem('tanggalAppTerakhir_arsakarya', tanggalServer);
+    }
+  } catch (e) {
+    // Diamkan jika offline/error
+  }
+}
+
+// Jalankan pengecekan pertama kali saat aplikasi dibuka
+cekUpdateOtomatis();
+
+// Ulangi pengecekan setiap 5 menit (300.000 ms)
+setInterval(cekUpdateOtomatis, 5 * 60 * 1000);
+
+
+// --- Fungsi Tampilan Notifikasi ---
+function tampilkanNotifUpdate() {
+  if (document.getElementById('notifUpdateArsakarya')) return; // Mencegah dobel
+  
+  const html = `
+  <div id="notifUpdateArsakarya" class="fixed top-4 left-4 right-4 max-w-md mx-auto bg-blue-600 text-white p-4 rounded-xl shadow-2xl z-[9999] flex items-center justify-between" style="animation: slideDown 0.4s ease-out;">
+    <div class="flex items-center gap-3">
+      <i class="fa-solid fa-rotate text-2xl animate-spin"></i>
+      <div>
+        <p class="font-bold text-sm">Update Aplikasi Tersedia!</p>
+        <p class="text-xs opacity-90">Klik tombol di kanan untuk memperbarui</p>
+      </div>
+    </div>
+    <button onclick="paksaUpdateArsakarya()" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-bold text-xs hover:bg-gray-100 transition shadow-md whitespace-nowrap">
+      Update
+    </button>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+  
+  // Hilang otomatis setelah 15 detik
+  setTimeout(() => {
+    const n = document.getElementById('notifUpdateArsakarya');
+    if (n) { n.style.opacity = '0'; setTimeout(() => n.remove(), 500); }
+  }, 15000);
+}
+
+function paksaUpdateArsakarya() {
+  const n = document.getElementById('notifUpdateArsakarya');
+  if (n) n.remove();
+  // Hapus cache dan reload paksa dari server
+  if ('caches' in window) {
+    caches.keys().then(names => {
+      names.forEach(name => caches.delete(name));
     });
-  });
+  }
+  window.location.reload(true);
 }
 
 // ===== VIEW SLIP GAJI DETAIL =====
