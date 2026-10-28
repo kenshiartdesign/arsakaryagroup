@@ -1007,7 +1007,7 @@ function resetBtn(id, text) {
   btn.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
 }
 
-// ===== WATERMARK TIMESTAMP UNTUK FOTO =====
+// ===== WATERMARK TIMESTAMP YANG LEBIH PROFESIONAL =====
 async function addTimestampWatermark(imageDataUrl, label) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -1020,41 +1020,77 @@ async function addTimestampWatermark(imageDataUrl, label) {
         ctx.drawImage(img, 0, 0);
         
         const now = new Date();
-        const tanggal = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
-        const waktu = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const tanggal = now.toLocaleDateString('id-ID', { 
+          weekday: 'long', 
+          day: '2-digit', 
+          month: 'long', 
+          year: 'numeric' 
+        });
+        const waktu = now.toLocaleTimeString('id-ID', { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit' 
+        });
         const hariPasaran = hitungHariPasaranUser();
         
-        const watermarkText = `${label}\n${hariPasaran}, ${tanggal}\n${waktu}`;
-        const fontSize = Math.max(24, Math.floor(img.width * 0.035));
-        ctx.font = `bold ${fontSize}px Arial, sans-serif`;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'bottom';
+        // ===== PERHITUNGAN UKURAN FONT RESPONSIF =====
+        const baseFontSize = Math.max(20, Math.floor(img.width * 0.04));
+        const smallFontSize = Math.max(14, Math.floor(img.width * 0.028));
+        const tinyFontSize = Math.max(11, Math.floor(img.width * 0.022));
         
-        const padding = Math.floor(img.width * 0.02);
-        const lines = watermarkText.split('\n');
-        const lineHeight = fontSize * 1.3;
-        const totalHeight = lines.length * lineHeight;
-        const startY = img.height - padding;
+        // ===== HITUNG TINGGI AREA WATERMARK =====
+        const padding = Math.floor(img.width * 0.03);
+        const lineHeight = baseFontSize * 1.4;
+        const watermarkHeight = (lineHeight * 4) + (padding * 2);
         
-        // Background semi-transparan
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
-        ctx.fillRect(0, startY - totalHeight - padding, img.width, totalHeight + padding * 2);
+        // ===== DRAW BACKGROUND WATERMARK =====
+        // Gradient background untuk efek profesional
+        const gradient = ctx.createLinearGradient(0, canvas.height - watermarkHeight, 0, canvas.height);
+        gradient.addColorStop(0, 'rgba(0, 0, 0, 0.85)');
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0.95)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, canvas.height - watermarkHeight, canvas.width, watermarkHeight);
         
-        // Garis aksen kuning di atas
+        // Garis aksen kuning di atas (seperti foto Anda)
         ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(0, startY - totalHeight - padding, img.width, 4);
+        ctx.fillRect(0, canvas.height - watermarkHeight, canvas.width, 4);
         
-        // Text putih dengan shadow
+        // ===== ICON & LABEL (PATROLI/KEJADIAN) =====
+        ctx.fillStyle = '#fbbf24'; // Warna kuning/amber
+        ctx.font = `bold ${baseFontSize}px Arial, sans-serif`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        
+        const iconText = label.includes('PATROLI') ? '📍' : '️';
+        ctx.fillText(`${iconText} ${label}`, padding, canvas.height - watermarkHeight + padding);
+        
+        // ===== TANGGAL LENGKAP =====
         ctx.fillStyle = '#ffffff';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-        ctx.shadowBlur = 6;
-        ctx.shadowOffsetX = 2;
-        ctx.shadowOffsetY = 2;
+        ctx.font = `bold ${smallFontSize}px Arial, sans-serif`;
+        ctx.fillText(tanggal, padding, canvas.height - watermarkHeight + padding + lineHeight);
         
-        lines.forEach((line, index) => {
-          const textY = startY - (lines.length - 1 - index) * lineHeight;
-          ctx.fillText(line, padding, textY);
-        });
+        // ===== WAKTU & HARI PASARAN =====
+        ctx.fillStyle = '#e5e7eb'; // Abu-abu terang
+        ctx.font = `${smallFontSize}px Arial, sans-serif`;
+        ctx.fillText(`${hariPasaran} • ${waktu}`, padding, canvas.height - watermarkHeight + padding + (lineHeight * 2));
+        
+        // ===== INFO GPS (jika ada) =====
+        if (gps) {
+          ctx.fillStyle = '#9ca3af'; // Abu-abu
+          ctx.font = `${tinyFontSize}px Arial, sans-serif`;
+          ctx.fillText(
+            `📍 ${gps.lat.toFixed(5)}, ${gps.lng.toFixed(5)} (±${Math.round(gps.accuracy)}m)`,
+            padding,
+            canvas.height - watermarkHeight + padding + (lineHeight * 3)
+          );
+        }
+        
+        // ===== WATERMARK KANAN BAWAH (Timestamp kecil) =====
+        const timestampText = now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + waktu;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.font = `${tinyFontSize}px Arial, sans-serif`;
+        ctx.textAlign = 'right';
+        ctx.fillText(timestampText, canvas.width - padding, canvas.height - padding - tinyFontSize);
         
         resolve(canvas.toDataURL('image/jpeg', 0.92));
       } catch (e) {
