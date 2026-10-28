@@ -2544,11 +2544,29 @@ if ('serviceWorker' in navigator) {
 }
 
 // ===== VIEW SLIP GAJI DETAIL =====
-function viewSlipGajiDetail(index) {
+async function viewSlipGajiDetail(index) {
   const slip = window.slipGajiData[index];
   if (!slip) {
     showToast('Data slip tidak ditemukan', 'error');
     return;
+  }
+  
+  // Fetch data lokasi untuk mapping ID ke Nama
+  let lokasiNama = slip.lokasi_kerja || '-';
+  try {
+    const lokasiRes = await fetch(CONFIG.GAS_URL + '?action=getLokasi');
+    const lokasiResult = await lokasiRes.json();
+    
+    if (lokasiResult.status === 'success' && lokasiResult.data) {
+      const lokasiData = lokasiResult.data.find(l => 
+        String(l.id_lokasi).trim().toUpperCase() === String(slip.lokasi_kerja).trim().toUpperCase()
+      );
+      if (lokasiData) {
+        lokasiNama = lokasiData.nama_lokasi;
+      }
+    }
+  } catch (e) {
+    console.error('Error load lokasi:', e);
   }
   
   const formatRupiah = (angka) => {
@@ -2575,7 +2593,7 @@ function viewSlipGajiDetail(index) {
   document.getElementById('userSlipPeriode').textContent = formatPeriode(slip.periode);
   document.getElementById('userSlipNama').textContent = slip.nama || currentUser.nama || '-';
   document.getElementById('userSlipJabatan').textContent = (slip.jabatan || currentUser.role || '-').toUpperCase();
-  document.getElementById('userSlipLokasi').textContent = slip.lokasi_kerja || selectedLokasi?.nama_lokasi || '-';
+  document.getElementById('userSlipLokasi').textContent = lokasiNama; // ← SEKARANG SUDAH NAMA LOKASI
   
   // Pendapatan
   document.getElementById('userSlipGajiPokok').textContent = formatRupiah(slip.gaji_pokok);
@@ -2604,11 +2622,6 @@ function viewSlipGajiDetail(index) {
   // Tampilkan modal
   document.getElementById('modalSlipGajiUser').classList.remove('hidden');
   document.getElementById('modalSlipGajiUser').classList.add('flex');
-}
-
-function closeModalSlipGajiUser() {
-  document.getElementById('modalSlipGajiUser').classList.add('hidden');
-  document.getElementById('modalSlipGajiUser').classList.remove('flex');
 }
 
 // ===== SIMPAN SLIP GAJI KE PDF =====
