@@ -1752,13 +1752,58 @@ async function loadSlipGaji() {
     const res = await fetch(CONFIG.GAS_URL + '?action=getSlipGaji&username=' + currentUser.username);
     const result = await res.json();
     const list = document.getElementById('listSlipGaji');
+    
     if (result.status === 'success' && result.data.length > 0) {
-      list.innerHTML = result.data.map(s => '<div class="flex justify-between items-center bg-slate-50 dark:bg-slate-700 p-3 rounded-xl border border-slate-200 dark:border-slate-600"><div><p class="font-bold text-sm">' + s.periode + '</p><p class="text-[10px] text-slate-500 dark:text-slate-400">Total: Rp ' + Number(s.total).toLocaleString('id-ID') + '</p></div><a href="' + s.file_url + '" target="_blank" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold">LIHAT</a></div>').join('');
+      // Format helper
+      const formatRupiah = (angka) => 'Rp ' + (angka || 0).toLocaleString('id-ID');
+      const formatPeriode = (periode) => {
+        const bulanNama = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+        // Handle format "2026-09" atau "2026-09-30T17:00:00.000Z"
+        let tahun, bulan;
+        if (periode.includes('T')) {
+          const d = new Date(periode);
+          tahun = d.getFullYear();
+          bulan = d.getMonth();
+        } else {
+          const parts = periode.split('-');
+          tahun = parseInt(parts[0]);
+          bulan = parseInt(parts[1]) - 1;
+        }
+        return bulanNama[bulan] + ' ' + tahun;
+      };
+      
+      list.innerHTML = result.data.map((s, index) => {
+        const periodeFormatted = formatPeriode(s.periode);
+        const total = s.total_penerimaan || 0;
+        return `
+          <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div class="flex justify-between items-center">
+              <div class="flex-1">
+                <p class="font-bold text-sm text-slate-800 dark:text-white flex items-center gap-2">
+                  <i class="fa-solid fa-calendar-day text-amber-500"></i>
+                  ${periodeFormatted}
+                </p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Total Penerimaan: <span class="font-bold text-green-600">${formatRupiah(total)}</span>
+                </p>
+              </div>
+              <button onclick="viewSlipGajiDetail(${index})" 
+                      class="bg-gradient-to-r from-amber-400 to-amber-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md active:scale-95 transition flex items-center gap-1">
+                <i class="fa-solid fa-eye"></i> LIHAT
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      // Simpan data untuk akses di modal
+      window.slipGajiData = result.data;
     } else {
-      showEmptyState('listSlipGaji', 'fa-solid fa-money-bill-wave', 'Belum Ada Slip Gaji', 'Slip gaji Anda akan muncul di sini');
+      showEmptyState('listSlipGaji', 'fa-solid fa-money-bill-wave', 'Belum Ada Slip Gaji', 'Slip gaji Anda akan muncul di sini setelah admin mengirimkannya.');
     }
   } catch (e) {
-    console.error(e);
+    console.error('Error load slip gaji:', e);
+    showEmptyState('listSlipGaji', 'fa-solid fa-circle-xmark', 'Gagal Memuat', 'Terjadi kesalahan koneksi. Silakan coba lagi.');
   }
 }
 
@@ -2496,6 +2541,87 @@ if ('serviceWorker' in navigator) {
       });
     });
   });
+}
+
+// ===== VIEW SLIP GAJI DETAIL =====
+function viewSlipGajiDetail(index) {
+  const slip = window.slipGajiData[index];
+  if (!slip) {
+    showToast('Data slip tidak ditemukan', 'error');
+    return;
+  }
+  
+  const formatRupiah = (angka) => {
+    const val = parseFloat(angka) || 0;
+    return val > 0 ? 'Rp ' + val.toLocaleString('id-ID') : 'Rp -';
+  };
+  
+  const formatPeriode = (periode) => {
+    const bulanNama = ['JANUARI','FEBRUARI','MARET','APRIL','MEI','JUNI','JULI','AGUSTUS','SEPTEMBER','OKTOBER','NOVEMBER','DESEMBER'];
+    let tahun, bulan;
+    if (periode.includes('T')) {
+      const d = new Date(periode);
+      tahun = d.getFullYear();
+      bulan = d.getMonth();
+    } else {
+      const parts = periode.split('-');
+      tahun = parseInt(parts[0]);
+      bulan = parseInt(parts[1]) - 1;
+    }
+    return bulanNama[bulan] + ' ' + tahun;
+  };
+  
+  // Set data ke modal
+  document.getElementById('userSlipPeriode').textContent = formatPeriode(slip.periode);
+  document.getElementById('userSlipNama').textContent = slip.nama || currentUser.nama || '-';
+  document.getElementById('userSlipJabatan').textContent = (slip.jabatan || currentUser.role || '-').toUpperCase();
+  document.getElementById('userSlipLokasi').textContent = slip.lokasi_kerja || selectedLokasi?.nama_lokasi || '-';
+  
+  // Pendapatan
+  document.getElementById('userSlipGajiPokok').textContent = formatRupiah(slip.gaji_pokok);
+  document.getElementById('userSlipTunjangan').textContent = formatRupiah(slip.tunjangan);
+  document.getElementById('userSlipLembur').textContent = formatRupiah(slip.lembur);
+  document.getElementById('userSlipTotalPendapatan').textContent = 'Rp ' + (slip.total_pendapatan || 0).toLocaleString('id-ID');
+  
+  // Potongan
+  document.getElementById('userSlipBPJSKes').textContent = formatRupiah(slip.bpjs_kesehatan);
+  document.getElementById('userSlipBPJSTK').textContent = formatRupiah(slip.bpjs_ketenagakerjaan);
+  document.getElementById('userSlipAdmin').textContent = formatRupiah(slip.admin);
+  document.getElementById('userSlipPinjaman').textContent = formatRupiah(slip.pinjaman_koperasi);
+  document.getElementById('userSlipIuran').textContent = formatRupiah(slip.iuran_koperasi);
+  document.getElementById('userSlipLainnya').textContent = formatRupiah(slip.lainnya);
+  document.getElementById('userSlipTotalPotongan').textContent = 'Rp ' + (slip.total_potongan || 0).toLocaleString('id-ID');
+  
+  // Total Penerimaan
+  document.getElementById('userSlipTotalPenerimaan').textContent = 'Rp ' + (slip.total_penerimaan || 0).toLocaleString('id-ID');
+  
+  // Tanggal cetak
+  const now = new Date();
+  document.getElementById('userSlipTanggalCetak').textContent = now.toLocaleDateString('id-ID', { 
+    day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+  });
+  
+  // Tampilkan modal
+  document.getElementById('modalSlipGajiUser').classList.remove('hidden');
+  document.getElementById('modalSlipGajiUser').classList.add('flex');
+}
+
+function closeModalSlipGajiUser() {
+  document.getElementById('modalSlipGajiUser').classList.add('hidden');
+  document.getElementById('modalSlipGajiUser').classList.remove('flex');
+}
+
+// ===== SIMPAN SLIP GAJI KE PDF =====
+function saveSlipGajiPDF() {
+  const periode = document.getElementById('userSlipPeriode').textContent;
+  const nama = document.getElementById('userSlipNama').textContent;
+  
+  showToast('Membuka dialog print...', 'info');
+  
+  // Gunakan window.print() - di HP Android akan muncul opsi "Save as PDF"
+  setTimeout(() => {
+    window.print();
+  }, 300);
 }
 
 // ===== INIT =====
