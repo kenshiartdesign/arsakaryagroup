@@ -1172,6 +1172,40 @@ header .fa-spinner {
   @page { size: A4; margin: 10mm; }
 }
 </style>
+
+<script>
+// ===== CLOSE MODAL SLIP GAJI USER =====
+function closeModalSlipGajiUser() {
+  const modal = document.getElementById('modalSlipGajiUser');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    console.log('✅ Modal slip gaji user ditutup');
+  }
+}
+
+// Event listener untuk tombol close
+document.addEventListener('DOMContentLoaded', function() {
+  // Close saat klik tombol X
+  const btnClose = document.querySelector('#modalSlipGajiUser button[onclick*="closeModalSlipGajiUser"]');
+  if (btnClose) {
+    btnClose.addEventListener('click', function(e) {
+      e.stopPropagation();
+      closeModalSlipGajiUser();
+    });
+  }
+  
+  // Close saat klik background
+  const modal = document.getElementById('modalSlipGajiUser');
+  if (modal) {
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        closeModalSlipGajiUser();
+      }
+    });
+  }
+});
+</script>
   
   <script src="./app.js"></script>
 </body>
