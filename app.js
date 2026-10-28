@@ -2551,24 +2551,6 @@ async function viewSlipGajiDetail(index) {
     return;
   }
   
-  // Fetch data lokasi untuk mapping ID ke Nama
-  let lokasiNama = slip.lokasi_kerja || '-';
-  try {
-    const lokasiRes = await fetch(CONFIG.GAS_URL + '?action=getLokasi');
-    const lokasiResult = await lokasiRes.json();
-    
-    if (lokasiResult.status === 'success' && lokasiResult.data) {
-      const lokasiData = lokasiResult.data.find(l => 
-        String(l.id_lokasi).trim().toUpperCase() === String(slip.lokasi_kerja).trim().toUpperCase()
-      );
-      if (lokasiData) {
-        lokasiNama = lokasiData.nama_lokasi;
-      }
-    }
-  } catch (e) {
-    console.error('Error load lokasi:', e);
-  }
-  
   const formatRupiah = (angka) => {
     const val = parseFloat(angka) || 0;
     return val > 0 ? 'Rp ' + val.toLocaleString('id-ID') : 'Rp -';
@@ -2589,11 +2571,42 @@ async function viewSlipGajiDetail(index) {
     return bulanNama[bulan] + ' ' + tahun;
   };
   
+  // ===== PERBAIKAN: Mapping ID Lokasi ke Nama Lokasi =====
+  let lokasiNama = slip.lokasi_kerja || '-';
+  
+  // Coba cari nama lokasi dari data yang sudah di-load
+  if (window._daftarLokasi && Array.isArray(window._daftarLokasi)) {
+    const lokasiFound = window._daftarLokasi.find(l => 
+      String(l.id_lokasi).trim().toUpperCase() === String(slip.lokasi_kerja).trim().toUpperCase()
+    );
+    if (lokasiFound) {
+      lokasiNama = lokasiFound.nama_lokasi;
+    }
+  }
+  
+  // Fallback: jika belum ada _daftarLokasi, fetch dari server
+  if (lokasiNama === slip.lokasi_kerja && slip.lokasi_kerja && slip.lokasi_kerja !== '-') {
+    try {
+      const res = await fetch(CONFIG.GAS_URL + '?action=getLokasi');
+      const result = await res.json();
+      if (result.status === 'success' && result.data) {
+        const lokasiFound = result.data.find(l => 
+          String(l.id_lokasi).trim().toUpperCase() === String(slip.lokasi_kerja).trim().toUpperCase()
+        );
+        if (lokasiFound) {
+          lokasiNama = lokasiFound.nama_lokasi;
+        }
+      }
+    } catch (e) {
+      console.error('Gagal fetch lokasi:', e);
+    }
+  }
+  
   // Set data ke modal
   document.getElementById('userSlipPeriode').textContent = formatPeriode(slip.periode);
   document.getElementById('userSlipNama').textContent = slip.nama || currentUser.nama || '-';
   document.getElementById('userSlipJabatan').textContent = (slip.jabatan || currentUser.role || '-').toUpperCase();
-  document.getElementById('userSlipLokasi').textContent = lokasiNama; // ← SEKARANG SUDAH NAMA LOKASI
+  document.getElementById('userSlipLokasi').textContent = lokasiNama; // ← Gunakan nama lokasi
   
   // Pendapatan
   document.getElementById('userSlipGajiPokok').textContent = formatRupiah(slip.gaji_pokok);
