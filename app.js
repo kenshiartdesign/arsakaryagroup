@@ -960,7 +960,7 @@ async function sendPhoto() {
   try {
     let label = '';
     if (currentCameraAction === 'patroli1' || currentCameraAction === 'patroli2') {
-      label = '📍 PATROLI';
+      label = 'PATROLI';
     } else if (currentCameraAction === 'kejadian1' || currentCameraAction === 'kejadian2') {
       label = '⚠️ KEJADIAN';
     } else if (currentCameraAction === 'ijin') {
