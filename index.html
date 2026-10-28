@@ -1017,6 +1017,162 @@ header .fa-spinner {
     }
   </script>
 
+<!-- ===== MODAL PREVIEW SLIP GAJI USER ===== -->
+<div id="modalSlipGajiUser" class="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-2">
+  <div class="bg-slate-100 rounded-2xl w-full max-w-3xl max-h-[95vh] overflow-y-auto shadow-2xl">
+    <!-- Header Modal -->
+    <div class="sticky top-0 bg-white border-b border-slate-200 p-3 flex items-center justify-between rounded-t-2xl z-10">
+      <h3 class="font-bold text-sm flex items-center gap-2 text-slate-800">
+        <i class="fa-solid fa-file-invoice-dollar text-amber-500"></i>
+        Slip Gaji Saya
+      </h3>
+      <div class="flex gap-2">
+        <button onclick="saveSlipGajiPDF()" class="h-9 px-3 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition flex items-center gap-1">
+          <i class="fa-solid fa-download"></i> Simpan PDF
+        </button>
+        <button onclick="closeModalSlipGajiUser()" class="w-9 h-9 rounded-lg bg-slate-100 hover:bg-red-100 hover:text-red-600 text-slate-500 flex items-center justify-center transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Content Preview -->
+    <div class="p-3 md:p-6 bg-slate-100" id="slipGajiUserContent">
+      <div class="bg-white p-6 md:p-10 shadow-sm border border-slate-200 rounded-xl mx-auto" style="max-width: 800px;" id="slipGajiPrintArea">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start border-b-2 border-slate-800 pb-4 mb-4 gap-3">
+          <div class="flex items-center gap-3">
+            <img src="https://lh3.googleusercontent.com/d/1nJYFyA8ykEVMM29pkwlhyPOONd7AjFtA" alt="Logo SBU" class="w-16 h-16 object-contain">
+            <div>
+              <h1 class="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">PT SENTRA BHAKTI UTAMA</h1>
+              <p class="text-xs text-slate-500 italic font-medium">"Profesional, Terpercaya, Berkualitas"</p>
+              <p class="text-[10px] text-slate-400 mt-1">Ruko Graha Pesona Jatisari Blok AA1 No. 9, Jatisari Mijen, Kota Semarang</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Slip Gaji Periode</p>
+            <p id="userSlipPeriode" class="text-lg md:text-xl font-extrabold text-amber-600 mt-1">-</p>
+          </div>
+        </div>
+
+        <!-- Info Karyawan -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 mb-6 text-sm bg-slate-50 p-4 rounded-lg border border-slate-100">
+          <div class="flex">
+            <span class="w-28 text-slate-500 font-medium text-xs">Nama Lengkap</span>
+            <span class="text-slate-400 text-xs">:</span>
+            <span id="userSlipNama" class="ml-2 font-bold text-slate-900 text-xs">-</span>
+          </div>
+          <div class="flex">
+            <span class="w-28 text-slate-500 font-medium text-xs">Jabatan</span>
+            <span class="text-slate-400 text-xs">:</span>
+            <span id="userSlipJabatan" class="ml-2 font-bold text-slate-900 text-xs">-</span>
+          </div>
+          <div class="flex">
+            <span class="w-28 text-slate-500 font-medium text-xs">Lokasi Kerja</span>
+            <span class="text-slate-400 text-xs">:</span>
+            <span id="userSlipLokasi" class="ml-2 font-bold text-slate-900 text-xs">-</span>
+          </div>
+        </div>
+
+        <!-- Pendapatan & Potongan -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <!-- Pendapatan -->
+          <div class="bg-green-50/50 rounded-xl p-4 border border-green-100">
+            <h3 class="font-bold text-green-800 mb-3 flex items-center gap-2 text-xs uppercase tracking-wide">
+              <i class="fa-solid fa-circle-plus text-green-500"></i> Pendapatan
+            </h3>
+            <div class="space-y-2 text-xs">
+              <div class="flex justify-between items-center">
+                <span class="text-slate-600">Gaji Pokok</span>
+                <span id="userSlipGajiPokok" class="font-semibold text-slate-900">Rp 0</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-600">Tunjangan Jabatan</span>
+                <span id="userSlipTunjangan" class="font-semibold text-slate-900">Rp 0</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-600">Lembur</span>
+                <span id="userSlipLembur" class="font-semibold text-slate-900">Rp 0</span>
+              </div>
+              <div class="border-t border-green-200 pt-2 flex justify-between items-center mt-2">
+                <span class="font-bold text-green-800">Total Pendapatan</span>
+                <span id="userSlipTotalPendapatan" class="font-extrabold text-green-700">Rp 0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Potongan -->
+          <div class="bg-red-50/50 rounded-xl p-4 border border-red-100">
+            <h3 class="font-bold text-red-800 mb-3 flex items-center gap-2 text-xs uppercase tracking-wide">
+              <i class="fa-solid fa-circle-minus text-red-500"></i> Potongan
+            </h3>
+            <div class="space-y-2 text-xs">
+              <div class="flex justify-between items-center">
+                <span class="text-slate-600">BPJS Kesehatan</span>
+                <span id="userSlipBPJSKes" class="font-semibold text-slate-900">Rp 0</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-600">BPJS Ketenagakerjaan</span>
+                <span id="userSlipBPJSTK" class="font-semibold text-slate-900">Rp 0</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-600">Admin</span>
+                <span id="userSlipAdmin" class="font-semibold text-slate-900">Rp 0</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-600">Pinjaman Koperasi</span>
+                <span id="userSlipPinjaman" class="font-semibold text-slate-900">Rp 0</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-600">Iuran Koperasi</span>
+                <span id="userSlipIuran" class="font-semibold text-slate-900">Rp 0</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-600">Lainnya</span>
+                <span id="userSlipLainnya" class="font-semibold text-slate-900">Rp 0</span>
+              </div>
+              <div class="border-t border-red-200 pt-2 flex justify-between items-center mt-2">
+                <span class="font-bold text-red-800">Total Potongan</span>
+                <span id="userSlipTotalPotongan" class="font-extrabold text-red-700">Rp 0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Penerimaan -->
+        <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-5 text-center shadow-lg mb-6">
+          <p class="text-[10px] font-medium text-slate-300 uppercase tracking-widest mb-1">Total Penerimaan (Take Home Pay)</p>
+          <p id="userSlipTotalPenerimaan" class="text-3xl md:text-4xl font-extrabold text-amber-400">Rp 0</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center border-t border-slate-100 pt-4">
+          <p class="text-[10px] text-slate-400">Dokumen ini digenerate secara otomatis oleh sistem PT Sentra Bhakti Utama.</p>
+          <p class="text-[10px] text-slate-400 mt-1">Dicetak pada: <span id="userSlipTanggalCetak" class="text-slate-600 font-medium">-</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CSS untuk Print PDF -->
+<style>
+@media print {
+  body * { visibility: hidden; }
+  #slipGajiPrintArea, #slipGajiPrintArea * { visibility: visible; }
+  #slipGajiPrintArea {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+    box-shadow: none;
+    border: none;
+  }
+  @page { size: A4; margin: 10mm; }
+}
+</style>
+  
   <script src="./app.js"></script>
 </body>
 </html>
