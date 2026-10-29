@@ -2706,6 +2706,108 @@ function saveSlipGajiPDF() {
   }, 300);
 }
 
+// ===== PENGUMUMAN USER =====
+let pengumumanUser = [];
+let pengumumanDibaca = JSON.parse(localStorage.getItem('sbu_pengumuman_dibaca') || '[]');
+
+async function loadPengumumanUser() {
+  if (!currentUser) return;
+  
+  try {
+    const res = await fetch(CONFIG.GAS_URL + '?action=getPengumumanUser&username=' + 
+      encodeURIComponent(currentUser.username) + 
+      '&userRole=' + encodeURIComponent(currentUser.role || '') + 
+      '&userLokasi=' + encodeURIComponent(currentUser.lokasi_default || ''));
+    const result = await res.json();
+    
+    if (result.status === 'success') {
+      pengumumanUser = result.data || [];
+      updatePengumumanBadge();
+    }
+  } catch (e) {
+    console.error('Error load pengumuman:', e);
+  }
+}
+
+function updatePengumumanBadge() {
+  // Hitung pengumuman yang belum dibaca
+  const belumDibaca = pengumumanUser.filter(p => !pengumumanDibaca.includes(p.id));
+  const badge = document.getElementById('pengumumanBadge');
+  
+  if (badge) {
+    if (belumDibaca.length > 0) {
+      badge.innerText = belumDibaca.length > 99 ? '99+' : belumDibaca.length;
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+  }
+}
+
+function showPengumumanModal() {
+  if (pengumumanUser.length === 0) {
+    showToast('Tidak ada pengumuman', 'info');
+    return;
+  }
+  
+  const modal = document.getElementById('modalPengumuman');
+  const list = document.getElementById('listPengumumanUser');
+  
+  if (!modal || !list) return;
+  
+  const priorityConfig = {
+    'DARURAT': { bg: 'bg-red-50', border: 'border-red-300', badge: 'bg-red-100 text-red-700', icon: 'fa-bolt' },
+    'PENTING': { bg: 'bg-amber-50', border: 'border-amber-300', badge: 'bg-amber-100 text-amber-700', icon: 'fa-exclamation' },
+    'NORMAL': { bg: 'bg-blue-50', border: 'border-blue-200', badge: 'bg-blue-100 text-blue-700', icon: 'fa-thumbtack' }
+  };
+  
+  let html = '';
+  pengumumanUser.forEach(p => {
+    const config = priorityConfig[p.priority] || priorityConfig['NORMAL'];
+    const sudahDibaca = pengumumanDibaca.includes(p.id);
+    const createdDate = new Date(p.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    
+    html += `
+      <div class="${config.bg} border ${config.border} rounded-xl p-4 ${sudahDibaca ? 'opacity-70' : ''}">
+        <div class="flex items-start gap-2 mb-2">
+          <i class="fa-solid ${config.icon} ${config.badge.split(' ')[1]} mt-1"></i>
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-1">
+              <h4 class="font-bold text-sm text-slate-800">${p.judul}</h4>
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${config.badge}">${p.priority}</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">${p.isi}</p>
+            <p class="text-[10px] text-slate-500 mt-2">📅 ${createdDate}</p>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Tandai sudah dibaca
+    if (!sudahDibaca) {
+      pengumumanDibaca.push(p.id);
+    }
+  });
+  
+  // Simpan ke localStorage
+  localStorage.setItem('sbu_pengumuman_dibaca', JSON.stringify(pengumumanDibaca));
+  
+  list.innerHTML = html;
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  
+  // Update badge
+  updatePengumumanBadge();
+}
+
+function closePengumumanModal() {
+  const modal = document.getElementById('modalPengumuman');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+}
+
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
   startGPS();
