@@ -1444,13 +1444,22 @@ async function handleFotoProfilChange(event) {
 // ===== MODAL EDIT PROFIL =====
 function openModalEditProfil() {
   // Isi form dengan data saat ini
-  document.getElementById('editNama').value = currentUser.nama || '';
-  document.getElementById('editNik').value = currentUser.nik || '';
-  document.getElementById('editRole').value = currentUser.role || 'satpam';
+  const namaInput = document.getElementById('editNama');
+  const nikInput = document.getElementById('editNik');
+  const roleInput = document.getElementById('editRole');
+  
+  if (namaInput) namaInput.value = currentUser.nama || '';
+  if (nikInput) nikInput.value = currentUser.nik || '';
+  if (roleInput) {
+    roleInput.value = (currentUser.role || 'satpam').toUpperCase();
+    roleInput.disabled = true; // Disable untuk semua user
+  }
   
   const modal = document.getElementById('modalEditProfil');
-  modal.classList.remove('hidden');
-  modal.classList.add('flex');
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
 }
 
 function closeModalEditProfil() {
@@ -1462,7 +1471,6 @@ function closeModalEditProfil() {
 async function saveEditProfil() {
   const namaBaru = document.getElementById('editNama').value.trim();
   const nikBaru = document.getElementById('editNik').value.trim();
-  const roleBaru = document.getElementById('editRole').value;
   
   if (!namaBaru) {
     showToast('Nama lengkap harus diisi!', 'warning');
@@ -1481,8 +1489,8 @@ async function saveEditProfil() {
       action: 'updateProfilUser',
       username: currentUser.username,
       nama_lengkap: namaBaru,
-      nik: nikBaru,
-      role: roleBaru
+      nik: nikBaru
+      // Role TIDAK dikirim karena user tidak boleh ubah jabatan
     };
     
     const response = await fetch(CONFIG.GAS_URL, {
@@ -1496,7 +1504,7 @@ async function saveEditProfil() {
       // Update data user di localStorage dan variabel
       currentUser.nama = namaBaru;
       currentUser.nik = nikBaru;
-      currentUser.role = roleBaru;
+      // Role TIDAK diupdate karena tidak berubah
       currentUser.avatar = String(namaBaru).substring(0, 2).toUpperCase();
       localStorage.setItem('sbu_user', JSON.stringify(currentUser));
       
@@ -1504,17 +1512,15 @@ async function saveEditProfil() {
       document.getElementById('profilNama').innerText = namaBaru;
       document.getElementById('profilNamaHeader').innerText = namaBaru;
       document.getElementById('profilNik').innerText = nikBaru;
-      document.getElementById('profilRole').innerText = roleBaru.toUpperCase();
-      document.getElementById('profilRoleHeader').innerText = roleBaru.toUpperCase();
       document.getElementById('namaTop').innerText = namaBaru;
       
       // Update avatar text jika tidak ada foto
       const avatarText = document.getElementById('avatarTopText');
       const profilText = document.getElementById('profilFotoText');
-      if (avatarText && !document.getElementById('avatarTopImg').classList.contains('hidden') === false) {
+      if (avatarText && document.getElementById('avatarTopImg').classList.contains('hidden')) {
         avatarText.innerText = currentUser.avatar;
       }
-      if (profilText && !document.getElementById('profilFotoImg').classList.contains('hidden') === false) {
+      if (profilText && document.getElementById('profilFotoImg').classList.contains('hidden')) {
         profilText.innerText = currentUser.avatar;
       }
       
