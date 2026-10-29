@@ -335,6 +335,7 @@ async function refreshCurrentTab() {
   
   // Refresh notifikasi badge juga
   checkNotifications();
+  loadPengumumanUser();
 }
 
 // ===== LOGIN & LOKASI =====
@@ -572,6 +573,7 @@ async function showMainScreen() {
   loadSlipGaji();
   loadPengajuanUser();
   loadStatistikProfil();
+  loadPengumumanUser();
   
   // Load notifikasi setelah 2 detik
   setTimeout(() => checkNotifications(), 2000);
