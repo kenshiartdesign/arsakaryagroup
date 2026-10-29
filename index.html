@@ -42,7 +42,7 @@
       }
     }
   </script>
-
+  
  <style>
   @keyframes slideDown {
     from { transform: translateY(-100%); opacity: 0; }
@@ -56,6 +56,40 @@
     .font-mono { font-family: 'Courier New', monospace !important; }
     html { scroll-behavior: smooth; }
     ::selection { background: #fbbf24; color: #0f172a; }
+
+    /* Fix input text color agar terlihat saat mengetik */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="tel"],
+textarea,
+select {
+  color: #1e293b !important; /* Warna teks gelap */
+  background-color: #f8fafc !important; /* Background terang */
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+textarea:focus,
+select:focus {
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+  border-color: #f59e0b !important;
+}
+
+/* Field yang disabled/readonly */
+input:disabled,
+input[readonly],
+select:disabled,
+select[readonly],
+textarea:disabled,
+textarea[readonly] {
+  color: #64748b !important;
+  background-color: #e2e8f0 !important;
+  cursor: not-allowed;
+}
     
     /* ===== DARK MODE TRANSITIONS ===== */
     body, .bg-white, .bg-slate-50, .bg-slate-100, .bg-slate-200 { transition: background-color 0.3s ease, color 0.3s ease; }
