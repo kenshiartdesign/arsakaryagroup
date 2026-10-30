@@ -687,43 +687,89 @@ async function captureSelfie() {
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   
+  // Mirror foto selfie
   ctx.translate(canvas.width, 0);
   ctx.scale(-1, 1);
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   
   const now = new Date();
   const jam = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  const tanggal = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const tanggal = now.toLocaleDateString('id-ID', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
   const pasaran = hitungHariPasaran();
   const statusText = currentCameraAction === 'masuk' ? 'ABSEN MASUK' : 'ABSEN PULANG';
-  const lokasiText = selectedLokasi ? selectedLokasi.nama_lokasi : 'Unknown';
+  const lokasiText = selectedLokasi ? selectedLokasi.nama_lokasi : 'Lokasi Tidak Diketahui';
   const namaUser = currentUser ? currentUser.nama : 'Unknown';
   
+  // Reset transform agar watermark tidak terbalik
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  const watermarkHeight = 130;
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+  
+  // ===== WATERMARK PROFESIONAL =====
+  const baseWidth = Math.min(canvas.width, 800);
+  const fontSize = Math.max(16, Math.floor(baseWidth * 0.035));
+  const smallFontSize = Math.max(12, Math.floor(baseWidth * 0.025));
+  const tinyFontSize = Math.max(10, Math.floor(baseWidth * 0.02));
+  const lineHeight = fontSize * 1.3;
+  const padding = Math.floor(baseWidth * 0.03);
+  const watermarkHeight = (lineHeight * 4) + (padding * 2);
+  
+  // 1. Gradient Background
+  const gradient = ctx.createLinearGradient(0, canvas.height - watermarkHeight, 0, canvas.height);
+  gradient.addColorStop(0, 'rgba(0, 0, 0, 0.90)');
+  gradient.addColorStop(1, 'rgba(0, 0, 0, 0.95)');
+  ctx.fillStyle = gradient;
   ctx.fillRect(0, canvas.height - watermarkHeight, canvas.width, watermarkHeight);
   
-  ctx.fillStyle = '#fbbf24'; ctx.font = 'bold 26px Arial'; ctx.textAlign = 'center';
-  ctx.fillText(statusText, canvas.width / 2, canvas.height - watermarkHeight + 35);
+  // 2. Garis Aksen Kuning di Atas
+  ctx.fillStyle = '#fbbf24';
+  ctx.fillRect(0, canvas.height - watermarkHeight, canvas.width, 3);
   
-  ctx.fillStyle = '#ffffff'; ctx.font = 'bold 18px Arial';
-  ctx.fillText(namaUser, canvas.width / 2, canvas.height - watermarkHeight + 65);
+  let yPos = canvas.height - watermarkHeight + padding;
   
-  ctx.fillStyle = '#e5e7eb'; ctx.font = '15px Arial';
-  ctx.fillText(tanggal + ' (' + pasaran + ')', canvas.width / 2, canvas.height - watermarkHeight + 90);
+  // 3. Status Absen (Warna berbeda untuk Masuk/Pulang)
+  const statusColor = currentCameraAction === 'masuk' ? '#4ade80' : '#fbbf24'; // Hijau atau Kuning
+  ctx.fillStyle = statusColor;
+  ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillText(`📍 ${statusText}`, padding, yPos);
+  yPos += lineHeight;
   
-  ctx.fillStyle = '#10b981'; ctx.font = 'bold 16px Arial';
-  ctx.fillText('⏰ ' + jam, canvas.width / 2, canvas.height - watermarkHeight + 115);
+  // 4. Nama User
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `bold ${smallFontSize}px Arial, sans-serif`;
+  ctx.fillText(namaUser, padding, yPos);
+  yPos += lineHeight;
   
+  // 5. Tanggal, Pasaran & Jam
+  ctx.fillStyle = '#e5e7eb';
+  ctx.font = `${smallFontSize}px Arial, sans-serif`;
+  ctx.fillText(`${tanggal} (${pasaran}) • ${jam}`, padding, yPos);
+  yPos += lineHeight;
+  
+  // 6. Lokasi & Koordinat GPS
   if (gps) {
-    ctx.fillStyle = '#9ca3af'; ctx.font = '13px monospace';
-    ctx.fillText('📍 ' + lokasiText + ' | ' + gps.lat.toFixed(5) + ', ' + gps.lng.toFixed(5), canvas.width / 2, canvas.height - watermarkHeight + 140);
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = `${tinyFontSize}px 'Courier New', monospace`;
+    const gpsText = `${lokasiText} | ${gps.lat.toFixed(5)}, ${gps.lng.toFixed(5)} (±${Math.round(gps.accuracy)}m)`;
+    ctx.fillText(gpsText, padding, yPos);
+  } else {
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = `${tinyFontSize}px Arial, sans-serif`;
+    ctx.fillText(`📍 ${lokasiText} | GPS tidak tersedia`, padding, yPos);
   }
   
-  capturedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+  // 7. Timestamp kecil di kanan bawah
+  const timestampSmall = `${now.getDate().toString().padStart(2,'0')}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getFullYear()} ${jam}`;
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+  ctx.font = `${tinyFontSize}px Arial, sans-serif`;
+  ctx.textAlign = 'right';
+  ctx.fillText(timestampSmall, canvas.width - padding, canvas.height - padding);
+  
+  // Simpan hasil foto
+  capturedBase64 = canvas.toDataURL('image/jpeg', 0.85);
   closeCameraAbsen();
   
+  // Update UI tombol absen
   const btnMasuk = document.getElementById('btnAbsenMasuk');
   const btnPulang = document.getElementById('btnAbsenPulang');
   const pesanEl = document.getElementById('absenPesan');
