@@ -2060,7 +2060,12 @@ async function loadRekapPatroli() {
   showSkeleton('listRekapPatroli', 3);
   
   try {
-    const res = await fetch(CONFIG.GAS_URL + '?action=getRekapPatroli&bulan=' + filterBulan + '&t=' + Date.now());
+    // Ambil data user yang sedang login dari localStorage
+const reqUser = currentUser ? currentUser.username : '';
+const reqRole = currentUser ? currentUser.role : 'satpam';
+
+// Kirim parameter requestUser dan requestUserRole ke backend
+const res = await fetch(CONFIG.GAS_URL + '?action=getRekapPatroli&bulan=' + filterBulan + '&requestUser=' + encodeURIComponent(reqUser) + '&requestUserRole=' + encodeURIComponent(reqRole) + '&t=' + Date.now());
     const result = await res.json();
     
     if (result.status !== 'success') {
@@ -2123,7 +2128,12 @@ async function loadRekapKejadian() {
   showSkeleton('listRekapKejadian', 3);
   
   try {
-    const res = await fetch(CONFIG.GAS_URL + '?action=getRekapKejadian&bulan=' + filterBulan + '&t=' + Date.now());
+    // Ambil data user yang sedang login dari localStorage
+const reqUser = currentUser ? currentUser.username : '';
+const reqRole = currentUser ? currentUser.role : 'satpam';
+
+// Kirim parameter requestUser dan requestUserRole ke backend
+const res = await fetch(CONFIG.GAS_URL + '?action=getRekapKejadian&bulan=' + filterBulan + '&requestUser=' + encodeURIComponent(reqUser) + '&requestUserRole=' + encodeURIComponent(reqRole) + '&t=' + Date.now());
     const result = await res.json();
     
     if (result.status !== 'success') {
