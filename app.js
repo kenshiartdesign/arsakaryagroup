@@ -2043,6 +2043,28 @@ function renderDetailHarian(grouped, ijinList, filterTanggal) {
   }).join('');
 }
 
+// ===== PULANG DITARUH DI TANGGAL SHIFT (tanggal MASUK-nya), JAM TETAP ASLI =====
+function rapikanPulangKeTanggalShift(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) return rows;
+  const arr = rows.slice().sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  let openMasukDate = null;
+  arr.forEach(r => {
+    const t = new Date(r.timestamp);
+    const dateStr = t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
+    const jenis = String(r.jenis || '').trim().toUpperCase();
+    if (jenis === 'MASUK') {
+      if (!openMasukDate) openMasukDate = dateStr;
+    } else if (jenis === 'PULANG') {
+      if (openMasukDate && openMasukDate !== dateStr) {
+        const p = openMasukDate.split('-');
+        r.timestamp = new Date(+p[0], +p[1]-1, +p[2], t.getHours(), t.getMinutes(), t.getSeconds());
+      }
+      openMasukDate = null;
+    }
+  });
+  return rows;
+}
+
 function getHariKerjaBulan(tahun, bulan) {
   let count = 0;
   const daysInMonth = new Date(tahun, bulan, 0).getDate();
@@ -2141,7 +2163,7 @@ const res = await fetch(CONFIG.GAS_URL + '?action=getRekapKejadian&bulan=' + fil
       return;
     }
     
-    const data = result.data || [];
+    const data = rapikanPulangKeTanggalShift(result.data || []);
     const total = result.total || 0;
     const bulanIni = result.bulanIni || 0;
     
