@@ -2947,49 +2947,6 @@ window.closeModalKoreksi = function() {
   }
 };
 
-window.submitKoreksiAbsen = async function() {
-  console.log('🟡 submitKoreksiAbsen dipanggil');
-  
-  const tanggal = document.getElementById('koreksiTanggal').value;
-  const jenis = document.getElementById('koreksiJenis').value;
-  const alasan = document.getElementById('koreksiAlasan').value.trim();
-  
-  if (!tanggal || !alasan) {
-    showToast('Tanggal dan alasan wajib diisi!', 'warning');
-    return;
-  }
-  
-  showLoading(true);
-  try {
-    const payload = {
-      username: currentUser.username,
-      nama: currentUser.nama,
-      tanggal_koreksi: tanggal,
-      jenis_koreksi: jenis,
-      alasan: alasan
-    };
-    
-    const response = await fetch(CONFIG.GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'simpanKoreksiAbsen', data: payload })
-    });
-    
-    const result = await response.json();
-    
-    if (result.status === 'success') {
-      showToast('Pengajuan berhasil dikirim! Silahkan menunggu approval dari HRD.', 'success');
-      window.closeModalKoreksi();
-      window.loadRiwayatKoreksi();
-    } else {
-      showToast('Gagal: ' + result.message, 'error');
-    }
-  } catch (e) {
-    showToast('Error koneksi: ' + e.message, 'error');
-  } finally {
-    showLoading(false);
-  }
-};
-
 window.loadRiwayatKoreksi = async function() {
   if (!currentUser) return;
   const listEl = document.getElementById('listRiwayatKoreksi');
