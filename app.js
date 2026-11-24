@@ -2893,25 +2893,40 @@ window.openModalKoreksi = function() {
   modal.style.cssText = 'display:flex;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;padding:16px;';
   modal.classList.remove('hidden');
   
-  // Attach event listener LANGSUNG di sini
-  const closeBtn = modal.querySelector('button');
-  if (closeBtn && !closeBtn.dataset.attached) {
-    closeBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      modal.style.display = 'none';
-      modal.classList.add('hidden');
-    });
-    closeBtn.dataset.attached = 'true';
-  }
+  // Attach event listener untuk tombol CLOSE (X)
+  const allButtons = modal.querySelectorAll('button');
+  console.log('🔍 Ditemukan ' + allButtons.length + ' tombol di modal');
   
-  const submitBtn = modal.querySelector('button[type="button"], button:not([type])');
-  if (submitBtn && submitBtn !== closeBtn && !submitBtn.dataset.attached) {
-    submitBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      window.submitKoreksiAbsen();
-    });
-    submitBtn.dataset.attached = 'true';
-  }
+  allButtons.forEach(function(btn, index) {
+    console.log('🔍 Tombol ' + index + ':', btn.textContent.trim());
+    
+    // Tombol X (close) - biasanya tombol pertama atau yang ada icon X
+    if (btn.innerHTML.includes('fa-xmark') || btn.innerHTML.includes('×') || index === 0) {
+      if (!btn.dataset.attached) {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          console.log('🔴 Tombol X diklik');
+          modal.style.display = 'none';
+          modal.classList.add('hidden');
+        });
+        btn.dataset.attached = 'true';
+        console.log('✅ Event listener attached ke tombol X');
+      }
+    }
+    
+    // Tombol SUBMIT (Kirim Pengajuan) - biasanya tombol terakhir atau yang ada teks "KIRIM"
+    if (btn.textContent.includes('KIRIM') || btn.textContent.includes('Kirim')) {
+      if (!btn.dataset.attached) {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          console.log('🟡 Tombol KIRIM diklik');
+          window.submitKoreksiAbsen();
+        });
+        btn.dataset.attached = 'true';
+        console.log('✅ Event listener attached ke tombol KIRIM');
+      }
+    }
+  });
   
   // Klik di luar untuk tutup
   modal.onclick = function(e) {
@@ -2933,6 +2948,8 @@ window.closeModalKoreksi = function() {
 };
 
 window.submitKoreksiAbsen = async function() {
+  console.log('🟡 submitKoreksiAbsen dipanggil');
+  
   const tanggal = document.getElementById('koreksiTanggal').value;
   const jenis = document.getElementById('koreksiJenis').value;
   const alasan = document.getElementById('koreksiAlasan').value.trim();
@@ -2960,14 +2977,14 @@ window.submitKoreksiAbsen = async function() {
     const result = await response.json();
     
     if (result.status === 'success') {
-      showToast('Pengajuan berhasil dikirim!', 'success');
+      showToast('Pengajuan berhasil dikirim! Silahkan menunggu approval dari HRD.', 'success');
       window.closeModalKoreksi();
       window.loadRiwayatKoreksi();
     } else {
       showToast('Gagal: ' + result.message, 'error');
     }
   } catch (e) {
-    showToast('Error: ' + e.message, 'error');
+    showToast('Error koneksi: ' + e.message, 'error');
   } finally {
     showLoading(false);
   }
