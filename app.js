@@ -2875,34 +2875,50 @@ function closePengumumanModal() {
 window.openModalKoreksi = function() {
   console.log('🔵 openModalKoreksi DIPANGGIL!');
   
-  try {
-    const today = new Date().toISOString().split('T')[0];
-    const tglInput = document.getElementById('koreksiTanggal');
-    const alasanInput = document.getElementById('koreksiAlasan');
-    const modal = document.getElementById('modalKoreksiAbsen');
-    
-    console.log('🔵 Modal ditemukan:', modal);
-    console.log('🔵 Isi modal (innerHTML):', modal.innerHTML.substring(0, 100));
-    
-    if (tglInput) tglInput.value = today;
-    if (alasanInput) alasanInput.value = '';
-    
-    if (modal) {
-      modal.style.display = 'flex';
-      modal.style.position = 'fixed';
-      modal.style.top = '0';
-      modal.style.left = '0';
-      modal.style.right = '0';
-      modal.style.bottom = '0';
-      modal.style.zIndex = '99999';
-      modal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-      modal.classList.remove('hidden');
-      
-      console.log('✅ Modal dibuka!');
-    }
-  } catch (e) {
-    console.error('❌ Error:', e);
+  // 1. Cari modal (di mana pun dia berada di DOM)
+  let modal = document.getElementById('modalKoreksiAbsen');
+  if (!modal) {
+    alert('Modal HTML tidak ditemukan di index.html!');
+    return;
   }
+  
+  // 2. PAKSA pindah modal ke document.body (bypass container bermasalah)
+  if (modal.parentElement !== document.body) {
+    document.body.appendChild(modal);
+    console.log('🔄 Modal dipindahkan ke document.body');
+  }
+  
+  // 3. Set nilai form
+  const today = new Date().toISOString().split('T')[0];
+  const tglInput = document.getElementById('koreksiTanggal');
+  const alasanInput = document.getElementById('koreksiAlasan');
+  if (tglInput) tglInput.value = today;
+  if (alasanInput) alasanInput.value = '';
+  
+  // 4. PAKSA tampilkan dengan inline style lengkap
+  modal.classList.remove('hidden');
+  modal.style.display = 'flex';
+  modal.style.position = 'fixed';
+  modal.style.top = '0';
+  modal.style.left = '0';
+  modal.style.width = '100vw';
+  modal.style.height = '100vh';
+  modal.style.zIndex = '999999';
+  modal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+  modal.style.alignItems = 'center';
+  modal.style.justifyContent = 'center';
+  modal.style.padding = '16px';
+  
+  // Pastikan isi modal (kotak putih) terlihat
+  const modalBox = modal.firstElementChild;
+  if (modalBox) {
+    modalBox.style.position = 'relative';
+    modalBox.style.zIndex = '1000000';
+    modalBox.style.maxHeight = '90vh';
+    modalBox.style.overflowY = 'auto';
+  }
+  
+  console.log('✅ Modal DIPAKSA muncul di body!');
 };
 
 window.closeModalKoreksi = function() {
@@ -2912,164 +2928,6 @@ window.closeModalKoreksi = function() {
     modal.classList.add('hidden');
   }
 };
-
-window.submitKoreksiAbsen = async function() {
-  const tanggal = document.getElementById('koreksiTanggal').value;
-  const jenis = document.getElementById('koreksiJenis').value;
-  const alasan = document.getElementById('koreksiAlasan').value.trim();
-  
-  if (!tanggal || !alasan) {
-    showToast('Tanggal dan alasan wajib diisi!', 'warning');
-    return;
-  }
-  
-  showLoading(true);
-  try {
-    const payload = {
-      username: currentUser.username,
-      nama: currentUser.nama,
-      tanggal_koreksi: tanggal,
-      jenis_koreksi: jenis,
-      alasan: alasan
-    };
-    
-    const response = await fetch(CONFIG.GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'simpanKoreksiAbsen', data: payload })
-    });
-    
-    const result = await response.json();
-    
-    if (result.status === 'success') {
-      showToast('Pengajuan berhasil dikirim!', 'success');
-      window.closeModalKoreksi();
-      loadRiwayatKoreksi();
-    } else {
-      showToast('Gagal: ' + result.message, 'error');
-    }
-  } catch (e) {
-    showToast('Koneksi gagal: ' + e.message, 'error');
-  } finally {
-    showLoading(false);
-  }
-};
-
-// Auto-attach event listeners
-document.addEventListener('DOMContentLoaded', function() {
-  // Tombol buka modal
-  const openBtns = document.querySelectorAll('button[onclick*="openModalKoreksi"]');
-  openBtns.forEach(btn => {
-    btn.removeAttribute('onclick');
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.openModalKoreksi();
-    });
-  });
-  
-  // Tombol close modal (X)
-  const closeBtn = document.getElementById('btnCloseKoreksi');
-  if (closeBtn) {
-    closeBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.closeModalKoreksi();
-    });
-  }
-  
-  // Tombol submit
-  const submitBtn = document.getElementById('btnSubmitKoreksi');
-  if (submitBtn) {
-    submitBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      window.submitKoreksiAbsen();
-    });
-  }
-});
-
-async function loadRiwayatKoreksi() {
-  if (!currentUser) return;
-  const listEl = document.getElementById('listRiwayatKoreksi'); 
-  if (!listEl) return;
-  
-  listEl.innerHTML = '<p class="text-center text-slate-400 text-xs py-4"><i class="fa-solid fa-circle-notch fa-spin"></i> Memuat data...</p>';
-  
-  try {
-    const res = await fetch(CONFIG.GAS_URL + '?action=getRiwayatKoreksi&username=' + encodeURIComponent(currentUser.username) + '&t=' + Date.now());
-    const result = await res.json();
-    
-    if (result.status !== 'success' || !result.data || result.data.length === 0) {
-      listEl.innerHTML = '<div class="text-center py-6"><i class="fa-solid fa-inbox text-3xl text-slate-300 dark:text-slate-600 mb-2"></i><p class="text-slate-400 text-xs">Belum ada pengajuan koreksi.</p></div>';
-      return;
-    }
-    
-    listEl.innerHTML = result.data.map(item => {
-      const statusConfig = {
-        'APPROVED': { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', label: 'Disetujui' },
-        'REJECTED': { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', label: 'Ditolak' },
-        'PENDING': { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-400', label: 'Menunggu' }
-      };
-      const config = statusConfig[item.status] || statusConfig['PENDING'];
-      
-      return `
-        <div class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div class="flex justify-between items-start mb-2">
-            <div class="flex items-center gap-2">
-              <i class="fa-solid fa-file-signature text-rose-500"></i>
-              <p class="font-bold text-xs text-slate-700 dark:text-slate-200">${item.jenis_koreksi}</p>
-            </div>
-            <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${config.bg} ${config.text}">${config.label}</span>
-          </div>
-          <p class="text-[10px] text-slate-500 dark:text-slate-400 mb-1">📅 Tanggal Koreksi: ${item.tanggal_koreksi}</p>
-          <p class="text-[10px] text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-700/50 p-2 rounded-lg">💬 "${item.alasan}"</p>
-        </div>
-      `;
-    }).join('');
-    
-  } catch (e) {
-    listEl.innerHTML = '<p class="text-center text-red-400 text-xs py-4">Gagal memuat data. Periksa koneksi.</p>';
-  }
-}
-
-// ===== AUTO-ATTACH EVENT LISTENER SAAT DOM READY =====
-// Ini yang membuat tombol PASTI berfungsi meskipun onclick di HTML tidak terbaca
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('🔧 Mencari tombol koreksi untuk attach event...');
-  
-  // Cari semua tombol yang punya onclick="openModalKoreksi()"
-  const buttons = document.querySelectorAll('button[onclick*="openModalKoreksi"]');
-  console.log('🔧 Ditemukan ' + buttons.length + ' tombol koreksi');
-  
-  buttons.forEach(function(btn) {
-    // Hapus onclick lama
-    btn.removeAttribute('onclick');
-    // Attach event listener baru
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      console.log('🟢 Tombol diklik via event listener!');
-      window.openModalKoreksi();
-    });
-    console.log('✅ Event listener attached ke tombol');
-  });
-  
-  // Juga attach ke tombol close modal
-  const closeButtons = document.querySelectorAll('button[onclick*="closeModalKoreksi"]');
-  closeButtons.forEach(function(btn) {
-    btn.removeAttribute('onclick');
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      window.closeModalKoreksi();
-    });
-  });
-  
-  // Attach ke tombol submit
-  const submitButtons = document.querySelectorAll('button[onclick*="submitKoreksiAbsen"]');
-  submitButtons.forEach(function(btn) {
-    btn.removeAttribute('onclick');
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      window.submitKoreksiAbsen();
-    });
-  });
-});
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
