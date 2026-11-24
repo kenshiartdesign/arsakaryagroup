@@ -2872,13 +2872,22 @@ function closePengumumanModal() {
 // ==========================================
 
 function openModalKoreksi() {
+  console.log('🔵 Fungsi openModalKoreksi dipanggil!');
+  
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('koreksiTanggal').value = today;
   document.getElementById('koreksiAlasan').value = '';
   
   const modal = document.getElementById('modalKoreksiAbsen');
-  modal.classList.remove('hidden');
-  modal.classList.add('flex');
+  console.log('🔵 Modal element:', modal);
+  
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    console.log('✅ Modal seharusnya sudah muncul!');
+  } else {
+    console.error('❌ Modal tidak ditemukan! Cek ID di HTML.');
+  }
 }
 
 function closeModalKoreksi() {
