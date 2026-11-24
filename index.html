@@ -1326,13 +1326,13 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 
 <!-- MODAL PENGAJUAN KOREKSI ABSEN -->
-<div id="modalKoreksiAbsen" class="hidden fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+<div id="modalKoreksiAbsen" class="hidden fixed inset-0 z-[99999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
   <div class="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md p-5 shadow-2xl animate-fade-in">
     <div class="flex justify-between items-center mb-4">
       <h3 class="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
         <i class="fa-solid fa-pen-to-square text-amber-500"></i> Ajukan Koreksi
       </h3>
-      <button onclick="closeModalKoreksi()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 hover:text-red-500 transition">
+      <button type="button" id="btnCloseKoreksi" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 hover:text-red-500 transition">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
@@ -1358,7 +1358,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <textarea id="koreksiAlasan" rows="3" placeholder="Jelaskan alasan koreksi..." class="w-full bg-slate-50 dark:bg-slate-700 rounded-xl p-3 text-sm border border-slate-200 dark:border-slate-600 outline-none focus:border-amber-400 resize-none text-slate-900 dark:text-white"></textarea>
       </div>
       
-      <button onclick="submitKoreksiAbsen()" class="w-full h-11 bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 rounded-xl font-bold shadow-md active:scale-95 transition mt-2">
+      <button type="button" id="btnSubmitKoreksi" class="w-full h-11 bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 rounded-xl font-bold shadow-md active:scale-95 transition mt-2">
         <i class="fa-solid fa-paper-plane mr-1"></i> KIRIM PENGAJUAN
       </button>
     </div>
