@@ -2881,15 +2881,13 @@ window.openModalKoreksi = function() {
     const alasanInput = document.getElementById('koreksiAlasan');
     const modal = document.getElementById('modalKoreksiAbsen');
     
-    console.log('🔵 tglInput:', tglInput);
-    console.log('🔵 alasanInput:', alasanInput);
-    console.log('🔵 modal:', modal);
+    console.log('🔵 Modal ditemukan:', modal);
+    console.log('🔵 Isi modal (innerHTML):', modal.innerHTML.substring(0, 100));
     
     if (tglInput) tglInput.value = today;
     if (alasanInput) alasanInput.value = '';
     
     if (modal) {
-      // PAKSA modal muncul dengan inline style
       modal.style.display = 'flex';
       modal.style.position = 'fixed';
       modal.style.top = '0';
@@ -2898,39 +2896,24 @@ window.openModalKoreksi = function() {
       modal.style.bottom = '0';
       modal.style.zIndex = '99999';
       modal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-      modal.style.backdropFilter = 'blur(4px)';
-      modal.style.alignItems = 'center';
-      modal.style.justifyContent = 'center';
-      modal.style.padding = '1rem';
-      
-      // Hapus class hidden jika ada
       modal.classList.remove('hidden');
       
-      console.log('✅ Modal DIPAKSA muncul dengan inline style!');
-      
-      // Scroll ke atas untuk memastikan modal terlihat
-      window.scrollTo(0, 0);
-    } else {
-      alert('Modal HTML tidak ditemukan! Cek index.html.');
+      console.log('✅ Modal dibuka!');
     }
   } catch (e) {
-    console.error('❌ Error di openModalKoreksi:', e);
-    alert('Error: ' + e.message);
+    console.error('❌ Error:', e);
   }
 };
 
 window.closeModalKoreksi = function() {
-  console.log('🔴 closeModalKoreksi dipanggil');
   const modal = document.getElementById('modalKoreksiAbsen');
   if (modal) {
-    modal.classList.add('hidden');
     modal.style.display = 'none';
+    modal.classList.add('hidden');
   }
 };
 
 window.submitKoreksiAbsen = async function() {
-  console.log('🟡 submitKoreksiAbsen dipanggil');
-  
   const tanggal = document.getElementById('koreksiTanggal').value;
   const jenis = document.getElementById('koreksiJenis').value;
   const alasan = document.getElementById('koreksiAlasan').value.trim();
@@ -2958,11 +2941,11 @@ window.submitKoreksiAbsen = async function() {
     const result = await response.json();
     
     if (result.status === 'success') {
-      showToast('Pengajuan berhasil dikirim! Menunggu persetujuan.', 'success');
+      showToast('Pengajuan berhasil dikirim!', 'success');
       window.closeModalKoreksi();
       loadRiwayatKoreksi();
     } else {
-      showToast('Gagal mengirim: ' + result.message, 'error');
+      showToast('Gagal: ' + result.message, 'error');
     }
   } catch (e) {
     showToast('Koneksi gagal: ' + e.message, 'error');
@@ -2970,6 +2953,37 @@ window.submitKoreksiAbsen = async function() {
     showLoading(false);
   }
 };
+
+// Auto-attach event listeners
+document.addEventListener('DOMContentLoaded', function() {
+  // Tombol buka modal
+  const openBtns = document.querySelectorAll('button[onclick*="openModalKoreksi"]');
+  openBtns.forEach(btn => {
+    btn.removeAttribute('onclick');
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.openModalKoreksi();
+    });
+  });
+  
+  // Tombol close modal (X)
+  const closeBtn = document.getElementById('btnCloseKoreksi');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.closeModalKoreksi();
+    });
+  }
+  
+  // Tombol submit
+  const submitBtn = document.getElementById('btnSubmitKoreksi');
+  if (submitBtn) {
+    submitBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.submitKoreksiAbsen();
+    });
+  }
+});
 
 async function loadRiwayatKoreksi() {
   if (!currentUser) return;
