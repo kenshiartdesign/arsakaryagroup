@@ -2204,6 +2204,7 @@ function showInfoSub(subName) {
   if (subName === 'kejadian') loadRekapKejadian();
   if (subName === 'riwayat') loadPengajuanUser();
   if (subName === 'gaji') loadSlipGaji();
+  if (subName === 'koreksi') loadRiwayatKoreksi();
 }
 
 function backToInfoMenu() {
@@ -2863,6 +2864,111 @@ function closePengumumanModal() {
   if (modal) {
     modal.classList.add('hidden');
     modal.classList.remove('flex');
+  }
+}
+
+// ==========================================
+// FITUR PENGAJUAN KOREKSI ABSEN (USER)
+// ==========================================
+
+function openModalKoreksi() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('koreksiTanggal').value = today;
+  document.getElementById('koreksiAlasan').value = '';
+  
+  const modal = document.getElementById('modalKoreksiAbsen');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function closeModalKoreksi() {
+  const modal = document.getElementById('modalKoreksiAbsen');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+}
+
+async function submitKoreksiAbsen() {
+  const tanggal = document.getElementById('koreksiTanggal').value;
+  const jenis = document.getElementById('koreksiJenis').value;
+  const alasan = document.getElementById('koreksiAlasan').value.trim();
+  
+  if (!tanggal || !alasan) {
+    showToast('Tanggal dan alasan wajib diisi!', 'warning');
+    return;
+  }
+  
+  showLoading(true);
+  try {
+    const payload = {
+      username: currentUser.username,
+      nama: currentUser.nama,
+      tanggal_koreksi: tanggal,
+      jenis_koreksi: jenis,
+      alasan: alasan
+    };
+    
+    const response = await fetch(CONFIG.GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'simpanKoreksiAbsen', data: payload })
+    });
+    
+    const result = await response.json();
+    
+    if (result.status === 'success') {
+      showToast('Pengajuan berhasil dikirim! Menunggu persetujuan.', 'success');
+      closeModalKoreksi();
+      loadRiwayatKoreksi();
+    } else {
+      showToast('Gagal mengirim: ' + result.message, 'error');
+    }
+  } catch (e) {
+    showToast('Koneksi gagal: ' + e.message, 'error');
+  } finally {
+    showLoading(false);
+  }
+}
+
+async function loadRiwayatKoreksi() {
+  if (!currentUser) return;
+  const listEl = document.getElementById('listRiwayatKoreksi'); 
+  if (!listEl) return;
+  
+  listEl.innerHTML = '<p class="text-center text-slate-400 text-xs py-4"><i class="fa-solid fa-circle-notch fa-spin"></i> Memuat data...</p>';
+  
+  try {
+    const res = await fetch(CONFIG.GAS_URL + '?action=getRiwayatKoreksi&username=' + encodeURIComponent(currentUser.username) + '&t=' + Date.now());
+    const result = await res.json();
+    
+    if (result.status !== 'success' || !result.data || result.data.length === 0) {
+      listEl.innerHTML = '<div class="text-center py-6"><i class="fa-solid fa-inbox text-3xl text-slate-300 dark:text-slate-600 mb-2"></i><p class="text-slate-400 text-xs">Belum ada pengajuan koreksi.</p></div>';
+      return;
+    }
+    
+    listEl.innerHTML = result.data.map(item => {
+      const statusConfig = {
+        'APPROVED': { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', label: 'Disetujui' },
+        'REJECTED': { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', label: 'Ditolak' },
+        'PENDING': { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-400', label: 'Menunggu' }
+      };
+      const config = statusConfig[item.status] || statusConfig['PENDING'];
+      
+      return `
+        <div class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div class="flex justify-between items-start mb-2">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-file-signature text-rose-500"></i>
+              <p class="font-bold text-xs text-slate-700 dark:text-slate-200">${item.jenis_koreksi}</p>
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${config.bg} ${config.text}">${config.label}</span>
+          </div>
+          <p class="text-[10px] text-slate-500 dark:text-slate-400 mb-1">📅 Tanggal Koreksi: ${item.tanggal_koreksi}</p>
+          <p class="text-[10px] text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-700/50 p-2 rounded-lg">💬 "${item.alasan}"</p>
+        </div>
+      `;
+    }).join('');
+    
+  } catch (e) {
+    listEl.innerHTML = '<p class="text-center text-red-400 text-xs py-4">Gagal memuat data. Periksa koneksi.</p>';
   }
 }
 
