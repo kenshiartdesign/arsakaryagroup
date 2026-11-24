@@ -2871,52 +2871,7 @@ function closePengumumanModal() {
 // FITUR PENGAJUAN KOREKSI ABSEN (USER) - FINAL
 // ==========================================
 
-window.openModalKoreksi = function() {
-  console.log('🔵 openModalKoreksi DIPANGGIL!');
-  
-  let modal = document.getElementById('modalKoreksiAbsen');
-  if (!modal) {
-    alert('Modal HTML tidak ditemukan!');
-    return;
-  }
-  
-  // Pindah ke body jika belum
-  if (modal.parentElement !== document.body) {
-    document.body.appendChild(modal);
-    console.log('🔄 Modal dipindahkan ke document.body');
-  }
-  
-  // Set nilai form
-  const today = new Date().toISOString().split('T')[0];
-  const tglInput = document.getElementById('koreksiTanggal');
-  const alasanInput = document.getElementById('koreksiAlasan');
-  if (tglInput) tglInput.value = today;
-  if (alasanInput) alasanInput.value = '';
-  
-  // Tampilkan modal
-  modal.classList.remove('hidden');
-  modal.style.display = 'flex';
-  modal.style.position = 'fixed';
-  modal.style.top = '0';
-  modal.style.left = '0';
-  modal.style.width = '100vw';
-  modal.style.height = '100vh';
-  modal.style.zIndex = '999999';
-  modal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-  modal.style.alignItems = 'center';
-  modal.style.justifyContent = 'center';
-  modal.style.padding = '16px';
-  
-  const modalBox = modal.firstElementChild;
-  if (modalBox) {
-    modalBox.style.position = 'relative';
-    modalBox.style.zIndex = '1000000';
-    modalBox.style.maxHeight = '90vh';
-    modalBox.style.overflowY = 'auto';
-  }
-  
-  console.log('✅ Modal DIPAKSA muncul di body!');
-};
+window.openModalKoreksi = function
 
 window.closeModalKoreksi = function() {
   console.log('🔴 closeModalKoreksi dipanggil');
