@@ -2889,9 +2889,27 @@ window.openModalKoreksi = function() {
     if (alasanInput) alasanInput.value = '';
     
     if (modal) {
-      modal.classList.remove('hidden');
+      // PAKSA modal muncul dengan inline style
       modal.style.display = 'flex';
-      console.log('✅ Modal dibuka!');
+      modal.style.position = 'fixed';
+      modal.style.top = '0';
+      modal.style.left = '0';
+      modal.style.right = '0';
+      modal.style.bottom = '0';
+      modal.style.zIndex = '99999';
+      modal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+      modal.style.backdropFilter = 'blur(4px)';
+      modal.style.alignItems = 'center';
+      modal.style.justifyContent = 'center';
+      modal.style.padding = '1rem';
+      
+      // Hapus class hidden jika ada
+      modal.classList.remove('hidden');
+      
+      console.log('✅ Modal DIPAKSA muncul dengan inline style!');
+      
+      // Scroll ke atas untuk memastikan modal terlihat
+      window.scrollTo(0, 0);
     } else {
       alert('Modal HTML tidak ditemukan! Cek index.html.');
     }
