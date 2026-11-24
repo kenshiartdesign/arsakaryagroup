@@ -2868,149 +2868,66 @@ function closePengumumanModal() {
 }
 
 // ==========================================
-// FITUR PENGAJUAN KOREKSI ABSEN (USER) - FINAL
+// FITUR PENGAJUAN KOREKSI ABSEN (USER) - VERSI ROBUST
 // ==========================================
 
-window.openModalKoreksi = function
+// Pastikan fungsi ada di global scope
+window.openModalKoreksi = function() {
+  console.log('🔵 openModalKoreksi DIPANGGIL!');
+  
+  // 1. Cari modal (di mana pun dia berada di DOM)
+  let modal = document.getElementById('modalKoreksiAbsen');
+  if (!modal) {
+    alert('Modal HTML tidak ditemukan di index.html!');
+    return;
+  }
+  
+  // 2. PAKSA pindah modal ke document.body (bypass container bermasalah)
+  if (modal.parentElement !== document.body) {
+    document.body.appendChild(modal);
+    console.log('🔄 Modal dipindahkan ke document.body');
+  }
+  
+  // 3. Set nilai form
+  const today = new Date().toISOString().split('T')[0];
+  const tglInput = document.getElementById('koreksiTanggal');
+  const alasanInput = document.getElementById('koreksiAlasan');
+  if (tglInput) tglInput.value = today;
+  if (alasanInput) alasanInput.value = '';
+  
+  // 4. PAKSA tampilkan dengan inline style lengkap
+  modal.classList.remove('hidden');
+  modal.style.display = 'flex';
+  modal.style.position = 'fixed';
+  modal.style.top = '0';
+  modal.style.left = '0';
+  modal.style.width = '100vw';
+  modal.style.height = '100vh';
+  modal.style.zIndex = '999999';
+  modal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+  modal.style.alignItems = 'center';
+  modal.style.justifyContent = 'center';
+  modal.style.padding = '16px';
+  
+  // Pastikan isi modal (kotak putih) terlihat
+  const modalBox = modal.firstElementChild;
+  if (modalBox) {
+    modalBox.style.position = 'relative';
+    modalBox.style.zIndex = '1000000';
+    modalBox.style.maxHeight = '90vh';
+    modalBox.style.overflowY = 'auto';
+  }
+  
+  console.log('✅ Modal DIPAKSA muncul di body!');
+};
 
 window.closeModalKoreksi = function() {
-  console.log('🔴 closeModalKoreksi dipanggil');
   const modal = document.getElementById('modalKoreksiAbsen');
   if (modal) {
     modal.style.display = 'none';
     modal.classList.add('hidden');
   }
 };
-
-window.submitKoreksiAbsen = async function() {
-  console.log('🟡 submitKoreksiAbsen dipanggil');
-  
-  const tanggal = document.getElementById('koreksiTanggal').value;
-  const jenis = document.getElementById('koreksiJenis').value;
-  const alasan = document.getElementById('koreksiAlasan').value.trim();
-  
-  if (!tanggal || !alasan) {
-    showToast('Tanggal dan alasan wajib diisi!', 'warning');
-    return;
-  }
-  
-  showLoading(true);
-  try {
-    const payload = {
-      username: currentUser.username,
-      nama: currentUser.nama,
-      tanggal_koreksi: tanggal,
-      jenis_koreksi: jenis,
-      alasan: alasan
-    };
-    
-    const response = await fetch(CONFIG.GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'simpanKoreksiAbsen', data: payload })
-    });
-    
-    const result = await response.json();
-    
-    if (result.status === 'success') {
-      showToast('Pengajuan berhasil dikirim! Menunggu persetujuan.', 'success');
-      window.closeModalKoreksi();
-      window.loadRiwayatKoreksi();
-    } else {
-      showToast('Gagal mengirim: ' + result.message, 'error');
-    }
-  } catch (e) {
-    showToast('Koneksi gagal: ' + e.message, 'error');
-  } finally {
-    showLoading(false);
-  }
-};
-
-window.loadRiwayatKoreksi = async function() {
-  console.log('📋 loadRiwayatKoreksi dipanggil');
-  
-  if (!currentUser) return;
-  const listEl = document.getElementById('listRiwayatKoreksi'); 
-  if (!listEl) return;
-  
-  listEl.innerHTML = '<p class="text-center text-slate-400 text-xs py-4"><i class="fa-solid fa-circle-notch fa-spin"></i> Memuat data...</p>';
-  
-  try {
-    const res = await fetch(CONFIG.GAS_URL + '?action=getRiwayatKoreksi&username=' + encodeURIComponent(currentUser.username) + '&t=' + Date.now());
-    const result = await res.json();
-    
-    if (result.status !== 'success' || !result.data || result.data.length === 0) {
-      listEl.innerHTML = '<div class="text-center py-6"><i class="fa-solid fa-inbox text-3xl text-slate-300 dark:text-slate-600 mb-2"></i><p class="text-slate-400 text-xs">Belum ada pengajuan koreksi.</p></div>';
-      return;
-    }
-    
-    listEl.innerHTML = result.data.map(item => {
-      const statusConfig = {
-        'APPROVED': { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-400', label: 'Disetujui' },
-        'REJECTED': { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', label: 'Ditolak' },
-        'PENDING': { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-400', label: 'Menunggu' }
-      };
-      const config = statusConfig[item.status] || statusConfig['PENDING'];
-      
-      return `
-        <div class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div class="flex justify-between items-start mb-2">
-            <div class="flex items-center gap-2">
-              <i class="fa-solid fa-file-signature text-rose-500"></i>
-              <p class="font-bold text-xs text-slate-700 dark:text-slate-200">${item.jenis_koreksi}</p>
-            </div>
-            <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${config.bg} ${config.text}">${config.label}</span>
-          </div>
-          <p class="text-[10px] text-slate-500 dark:text-slate-400 mb-1">📅 Tanggal Koreksi: ${item.tanggal_koreksi}</p>
-          <p class="text-[10px] text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-700/50 p-2 rounded-lg">💬 "${item.alasan}"</p>
-        </div>
-      `;
-    }).join('');
-    
-  } catch (e) {
-    listEl.innerHTML = '<p class="text-center text-red-400 text-xs py-4">Gagal memuat data. Periksa koneksi.</p>';
-  }
-};
-
-// ===== AUTO-ATTACH EVENT LISTENER =====
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('🔧 Mencari tombol koreksi untuk attach event...');
-  
-  // Tombol buka modal
-  const openButtons = document.querySelectorAll('button[onclick*="openModalKoreksi"]');
-  console.log('🔧 Ditemukan ' + openButtons.length + ' tombol buka');
-  openButtons.forEach(function(btn) {
-    btn.removeAttribute('onclick');
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      console.log('🟢 Tombol buka diklik!');
-      window.openModalKoreksi();
-    });
-  });
-  
-  // Tombol close modal (X)
-  const closeButtons = document.querySelectorAll('button[onclick*="closeModalKoreksi"]');
-  console.log('🔧 Ditemukan ' + closeButtons.length + ' tombol close');
-  closeButtons.forEach(function(btn) {
-    btn.removeAttribute('onclick');
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      console.log('🔴 Tombol close diklik!');
-      window.closeModalKoreksi();
-    });
-  });
-  
-  // Tombol submit
-  const submitButtons = document.querySelectorAll('button[onclick*="submitKoreksiAbsen"]');
-  console.log('🔧 Ditemukan ' + submitButtons.length + ' tombol submit');
-  submitButtons.forEach(function(btn) {
-    btn.removeAttribute('onclick');
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      console.log('🟡 Tombol submit diklik!');
-      window.submitKoreksiAbsen();
-    });
-  });
-});
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
