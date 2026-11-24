@@ -2868,35 +2868,51 @@ function closePengumumanModal() {
 }
 
 // ==========================================
-// FITUR PENGAJUAN KOREKSI ABSEN (USER)
+// FITUR PENGAJUAN KOREKSI ABSEN (USER) - VERSI ROBUST
 // ==========================================
 
-function openModalKoreksi() {
-  console.log('🔵 Fungsi openModalKoreksi dipanggil!');
+// Pastikan fungsi ada di global scope
+window.openModalKoreksi = function() {
+  console.log('🔵 openModalKoreksi DIPANGGIL!');
   
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('koreksiTanggal').value = today;
-  document.getElementById('koreksiAlasan').value = '';
-  
-  const modal = document.getElementById('modalKoreksiAbsen');
-  console.log('🔵 Modal element:', modal);
-  
-  if (modal) {
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    console.log('✅ Modal seharusnya sudah muncul!');
-  } else {
-    console.error('❌ Modal tidak ditemukan! Cek ID di HTML.');
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const tglInput = document.getElementById('koreksiTanggal');
+    const alasanInput = document.getElementById('koreksiAlasan');
+    const modal = document.getElementById('modalKoreksiAbsen');
+    
+    console.log('🔵 tglInput:', tglInput);
+    console.log('🔵 alasanInput:', alasanInput);
+    console.log('🔵 modal:', modal);
+    
+    if (tglInput) tglInput.value = today;
+    if (alasanInput) alasanInput.value = '';
+    
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+      console.log('✅ Modal dibuka!');
+    } else {
+      alert('Modal HTML tidak ditemukan! Cek index.html.');
+    }
+  } catch (e) {
+    console.error('❌ Error di openModalKoreksi:', e);
+    alert('Error: ' + e.message);
   }
-}
+};
 
-function closeModalKoreksi() {
+window.closeModalKoreksi = function() {
+  console.log('🔴 closeModalKoreksi dipanggil');
   const modal = document.getElementById('modalKoreksiAbsen');
-  modal.classList.add('hidden');
-  modal.classList.remove('flex');
-}
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+  }
+};
 
-async function submitKoreksiAbsen() {
+window.submitKoreksiAbsen = async function() {
+  console.log('🟡 submitKoreksiAbsen dipanggil');
+  
   const tanggal = document.getElementById('koreksiTanggal').value;
   const jenis = document.getElementById('koreksiJenis').value;
   const alasan = document.getElementById('koreksiAlasan').value.trim();
@@ -2925,7 +2941,7 @@ async function submitKoreksiAbsen() {
     
     if (result.status === 'success') {
       showToast('Pengajuan berhasil dikirim! Menunggu persetujuan.', 'success');
-      closeModalKoreksi();
+      window.closeModalKoreksi();
       loadRiwayatKoreksi();
     } else {
       showToast('Gagal mengirim: ' + result.message, 'error');
@@ -2935,7 +2951,7 @@ async function submitKoreksiAbsen() {
   } finally {
     showLoading(false);
   }
-}
+};
 
 async function loadRiwayatKoreksi() {
   if (!currentUser) return;
@@ -2980,6 +2996,48 @@ async function loadRiwayatKoreksi() {
     listEl.innerHTML = '<p class="text-center text-red-400 text-xs py-4">Gagal memuat data. Periksa koneksi.</p>';
   }
 }
+
+// ===== AUTO-ATTACH EVENT LISTENER SAAT DOM READY =====
+// Ini yang membuat tombol PASTI berfungsi meskipun onclick di HTML tidak terbaca
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🔧 Mencari tombol koreksi untuk attach event...');
+  
+  // Cari semua tombol yang punya onclick="openModalKoreksi()"
+  const buttons = document.querySelectorAll('button[onclick*="openModalKoreksi"]');
+  console.log('🔧 Ditemukan ' + buttons.length + ' tombol koreksi');
+  
+  buttons.forEach(function(btn) {
+    // Hapus onclick lama
+    btn.removeAttribute('onclick');
+    // Attach event listener baru
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      console.log('🟢 Tombol diklik via event listener!');
+      window.openModalKoreksi();
+    });
+    console.log('✅ Event listener attached ke tombol');
+  });
+  
+  // Juga attach ke tombol close modal
+  const closeButtons = document.querySelectorAll('button[onclick*="closeModalKoreksi"]');
+  closeButtons.forEach(function(btn) {
+    btn.removeAttribute('onclick');
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      window.closeModalKoreksi();
+    });
+  });
+  
+  // Attach ke tombol submit
+  const submitButtons = document.querySelectorAll('button[onclick*="submitKoreksiAbsen"]');
+  submitButtons.forEach(function(btn) {
+    btn.removeAttribute('onclick');
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      window.submitKoreksiAbsen();
+    });
+  });
+});
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
