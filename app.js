@@ -2866,6 +2866,38 @@ function closePengumumanModal() {
   }
 }
 
+// ===== MASKING INPUT JAM 24 JAM =====
+function setupJamMask() {
+  const jamInput = document.getElementById('koreksiJam');
+  if (!jamInput) return;
+  
+  jamInput.addEventListener('input', function(e) {
+    let value = this.value.replace(/[^0-9]/g, ''); // Hapus semua non-angka
+    
+    // Batasi maksimal 4 digit (HHmm)
+    if (value.length > 4) value = value.substring(0, 4);
+    
+    // Tambahkan titik dua otomatis
+    if (value.length >= 3) {
+      value = value.substring(0, 2) + ':' + value.substring(2);
+    }
+    
+    this.value = value;
+  });
+  
+  // Validasi saat blur (kehilangan fokus)
+  jamInput.addEventListener('blur', function(e) {
+    const val = this.value.trim();
+    const match = val.match(/^([01]\d|2[0-3]):([0-5]\d)$/);
+    
+    if (val && !match) {
+      showToast('Format jam tidak valid! Gunakan HH:mm (contoh: 14:30)', 'warning');
+      this.value = '';
+      this.focus();
+    }
+  });
+}
+
 // ==========================================
 // FITUR KOREKSI ABSEN - FINAL FIX
 // ==========================================
@@ -2886,7 +2918,10 @@ window.openModalKoreksi = function() {
   document.getElementById('koreksiTanggal').value = today;
   document.getElementById('koreksiAlasan').value = '';
   document.getElementById('koreksiJenis').value = 'Lupa Absen Masuk';
-  document.getElementById('koreksiJam').value = '08:00'; // Default jam siang
+  document.getElementById('koreksiJam').value = '08:00'; // Default jam 24 jam
+  
+  // TAMBAHKAN BARIS INI - Setup masking input jam
+  setupJamMask();
   
   modal.style.cssText = 'display:flex;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;padding:16px;';
   modal.classList.remove('hidden');
@@ -2908,7 +2943,7 @@ window.submitKoreksiAbsen = async function() {
   
   const tanggal = document.getElementById('koreksiTanggal').value;
   const jenis = document.getElementById('koreksiJenis').value;
-  const jam = document.getElementById('koreksiJam').value;
+  const jam = document.getElementById('koreksiJam').value.trim();
   const alasan = document.getElementById('koreksiAlasan').value.trim();
   
   if (!tanggal || !alasan) {
@@ -2916,8 +2951,10 @@ window.submitKoreksiAbsen = async function() {
     return;
   }
   
-  if (!jam) {
-    showToast('Jam koreksi wajib diisi!', 'warning');
+  // Validasi format jam 24 jam (HH:mm)
+  const jamValid = /^([01]\d|2[0-3]):([0-5]\d)$/.test(jam);
+  if (!jam || !jamValid) {
+    showToast('Jam tidak valid! Gunakan format 24 jam (contoh: 14:30)', 'warning');
     return;
   }
   
