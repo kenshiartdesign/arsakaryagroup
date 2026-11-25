@@ -2866,12 +2866,6 @@ function closePengumumanModal() {
   }
 }
 
-// Helper: Set jam berdasarkan tombol shift
-function setJamShift(jam) {
-  document.getElementById('koreksiJam').value = jam;
-  showToast('Jam diatur ke ' + jam, 'info');
-}
-
 // ==========================================
 // FITUR KOREKSI ABSEN - FINAL FIX
 // ==========================================
