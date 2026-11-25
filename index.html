@@ -51,6 +51,32 @@
 </style>
   
   <style>
+/* ===== FIX: INPUT JAM KOREKSI AGAR TERLIHAT JELAS ===== */
+#koreksiJam {
+  color: #0f172a !important; /* Hitam pekat */
+  background-color: #f8fafc !important; /* Background terang */
+  font-weight: 700 !important; /* Bold */
+  font-size: 16px !important; /* Lebih besar */
+  letter-spacing: 0.05em !important;
+}
+
+#koreksiJam:focus {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+  border-color: #f59e0b !important;
+}
+
+/* Dark mode override */
+.dark #koreksiJam {
+  color: #ffffff !important;
+  background-color: #334155 !important;
+}
+
+.dark #koreksiJam:focus {
+  color: #ffffff !important;
+  background-color: #1e293b !important;
+}
+    
     /* ===== GLOBAL STYLES ===== */
     * { font-family: 'Poppins', sans-serif !important; -webkit-tap-highlight-color: transparent; }
     .font-mono { font-family: 'Courier New', monospace !important; }
@@ -1356,7 +1382,8 @@ document.addEventListener('DOMContentLoaded', function() {
      <div>
   <label class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 block">Jam Koreksi (Format 24 Jam)</label>
   <input type="text" id="koreksiJam" placeholder="HH:mm (contoh: 14:30)" maxlength="5" 
-    class="w-full h-10 bg-slate-50 dark:bg-slate-700 rounded-xl px-3 text-sm border border-slate-200 dark:border-slate-600 outline-none focus:border-amber-400 text-slate-900 dark:text-white font-mono tracking-wider">
+  class="w-full h-10 bg-slate-50 dark:bg-slate-700 rounded-xl px-3 text-sm border border-slate-200 dark:border-slate-600 outline-none focus:border-amber-400 text-slate-900 dark:text-white font-mono tracking-wider"
+  style="color: #0f172a !important; background-color: #f8fafc !important; font-weight: 700 !important; font-size: 16px !important;">
   <p class="text-[9px] text-slate-400 mt-1 flex items-center gap-1">
     <i class="fa-solid fa-circle-info"></i> 
     Format 24 jam: 08:00, 14:30, 22:15 (tanpa AM/PM)
