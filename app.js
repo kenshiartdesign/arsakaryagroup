@@ -2866,11 +2866,15 @@ function closePengumumanModal() {
   }
 }
 
+// Helper: Set jam berdasarkan tombol shift
+function setJamShift(jam) {
+  document.getElementById('koreksiJam').value = jam;
+  showToast('Jam diatur ke ' + jam, 'info');
+}
+
 // ==========================================
 // FITUR KOREKSI ABSEN - FINAL FIX
 // ==========================================
-
-// 1. DEFINISIKAN FUNGSI DI GLOBAL SCOPE
 window.openModalKoreksi = function() {
   console.log('🔵 openModalKoreksi dipanggil');
   
@@ -2880,18 +2884,16 @@ window.openModalKoreksi = function() {
     return;
   }
   
-  // Pindah ke body jika belum
   if (modal.parentElement !== document.body) {
     document.body.appendChild(modal);
   }
   
-  // Set form
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('koreksiTanggal').value = today;
   document.getElementById('koreksiAlasan').value = '';
   document.getElementById('koreksiJenis').value = 'Lupa Absen Masuk';
+  document.getElementById('koreksiJam').value = '08:00'; // Default jam siang
   
-  // Tampilkan
   modal.style.cssText = 'display:flex;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;padding:16px;';
   modal.classList.remove('hidden');
   
@@ -2912,10 +2914,16 @@ window.submitKoreksiAbsen = async function() {
   
   const tanggal = document.getElementById('koreksiTanggal').value;
   const jenis = document.getElementById('koreksiJenis').value;
+  const jam = document.getElementById('koreksiJam').value;
   const alasan = document.getElementById('koreksiAlasan').value.trim();
   
   if (!tanggal || !alasan) {
     showToast('Tanggal dan alasan wajib diisi!', 'warning');
+    return;
+  }
+  
+  if (!jam) {
+    showToast('Jam koreksi wajib diisi!', 'warning');
     return;
   }
   
@@ -2926,6 +2934,7 @@ window.submitKoreksiAbsen = async function() {
       nama: currentUser.nama,
       tanggal_koreksi: tanggal,
       jenis_koreksi: jenis,
+      jam_koreksi: jam,
       alasan: alasan,
       lokasi_id: currentUser.lokasi_default || 'LOK000'
     };
