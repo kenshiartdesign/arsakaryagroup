@@ -536,8 +536,16 @@ header .fa-spinner {
               <button onclick="showInfoSub('shift')" class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-2xl p-4 shadow-md active:scale-95 transition flex flex-col items-center justify-center gap-2 min-h-[90px]"><i class="fa-solid fa-right-left text-2xl"></i><p class="text-[10px] font-bold text-center leading-tight">Tukar<br>Shift</p></button>
               <button onclick="showInfoSub('ijin')" class="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl p-4 shadow-md active:scale-95 transition flex flex-col items-center justify-center gap-2 min-h-[90px]"><i class="fa-solid fa-file-medical text-2xl"></i><p class="text-[10px] font-bold text-center leading-tight">Ijin<br>/ Sakit</p></button>
               <button onclick="showInfoSub('riwayat')" class="bg-gradient-to-br from-slate-700 to-slate-800 text-white rounded-2xl p-4 shadow-md active:scale-95 transition flex flex-col items-center justify-center gap-2 min-h-[90px]"><i class="fa-solid fa-clock-rotate-left text-2xl"></i><p class="text-[10px] font-bold text-center leading-tight">Riwayat<br>Pengajuan</p></button>
-              <button onclick="showInfoSub('gaji')" class="col-span-3 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-2xl p-4 shadow-md active:scale-95 transition flex items-center justify-center gap-3 min-h-[70px]"><i class="fa-solid fa-money-bill-wave text-2xl"></i><p class="text-xs font-bold">Slip Gaji Saya</p></button>
-              <button onclick="showInfoSub('koreksi')" class="bg-gradient-to-br from-rose-500 to-rose-600 text-white rounded-2xl p-4 shadow-md active:scale-95 transition flex flex-col items-center justify-center gap-2 min-h-[90px]">
+              <div class="grid grid-cols-2 gap-3">
+              <button onclick="showInfoSub('gaji')" class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-2xl p-4 shadow-md active:scale-95 transition flex flex-col items-center justify-center gap-2 min-h-[90px]">
+    <i class="fa-solid fa-money-bill-wave text-2xl"></i>
+    <p class="text-[10px] font-bold text-center leading-tight">Slip<br>Gaji</p>
+  </button>
+  
+  <button onclick="showInfoSub('koreksi')" class="bg-gradient-to-br from-rose-500 to-rose-600 text-white rounded-2xl p-4 shadow-md active:scale-95 transition flex flex-col items-center justify-center gap-2 min-h-[90px]">
+    <i class="fa-solid fa-file-signature text-2xl"></i>
+    <p class="text-[10px] font-bold text-center leading-tight">Koreksi<br>Absen</p>
+  </button>
   <i class="fa-solid fa-file-signature text-2xl"></i>
   <p class="text-[10px] font-bold text-center leading-tight">Koreksi<br>Absen</p>
 </button>
