@@ -1353,12 +1353,13 @@ document.addEventListener('DOMContentLoaded', function() {
         </select>
       </div>
       
-      <div>
+     <div>
   <label class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 block">Jam Koreksi (Format 24 Jam)</label>
-  <input type="time" id="koreksiJam" lang="id" class="w-full h-10 bg-slate-50 dark:bg-slate-700 rounded-xl px-3 text-sm border border-slate-200 dark:border-slate-600 outline-none focus:border-amber-400 text-slate-900 dark:text-white">
+  <input type="text" id="koreksiJam" placeholder="HH:mm (contoh: 14:30)" maxlength="5" 
+    class="w-full h-10 bg-slate-50 dark:bg-slate-700 rounded-xl px-3 text-sm border border-slate-200 dark:border-slate-600 outline-none focus:border-amber-400 text-slate-900 dark:text-white font-mono tracking-wider">
   <p class="text-[9px] text-slate-400 mt-1 flex items-center gap-1">
     <i class="fa-solid fa-circle-info"></i> 
-    Contoh: 08:00 (masuk pagi) • 14:00 (sore) • 22:00 (malam)
+    Format 24 jam: 08:00, 14:30, 22:15 (tanpa AM/PM)
   </p>
 </div>
         <p class="text-[9px] text-slate-400 mt-1 flex items-center gap-1">
