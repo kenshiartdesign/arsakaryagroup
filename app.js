@@ -2904,7 +2904,20 @@ function setupJamMask() {
 window.openModalKoreksi = function() {
   console.log('🔵 openModalKoreksi dipanggil');
   
-  // ===== VALIDASI LOKASI GPS SEBELUM BUKA MODAL =====
+  // ===== CEK ROLE USER DULU =====
+  const userRole = String(currentUser.role || '').trim().toLowerCase();
+  const isPrivileged = (userRole === 'admin' || userRole === 'hrd' || userRole === 'superadmin' || userRole === 'supervisor');
+  
+  console.log('👤 User Role:', userRole, '| Privileged:', isPrivileged);
+  
+  // ===== SKIP VALIDASI GPS UNTUK ADMIN/HRD/SUPERADMIN =====
+  if (isPrivileged) {
+    console.log('👑 User adalah ' + userRole.toUpperCase() + ' → Skip validasi GPS, bebas mengajukan dari mana saja');
+    bukaModalKoreksiSaja();
+    return;
+  }
+  
+  // ===== UNTUK USER BIASA: CEK GPS =====
   if (!gps || !gps.lat || !gps.lng) {
     showToast('⚠️ GPS belum tersedia. Pastikan GPS aktif dan izinkan akses lokasi.', 'warning');
     return;
@@ -2918,20 +2931,22 @@ window.openModalKoreksi = function() {
   // Cek apakah user punya lokasi default
   const lokasiDefault = currentUser.lokasi_default;
   if (!lokasiDefault || lokasiDefault === '' || lokasiDefault === '-') {
-    // User tanpa lokasi default (admin/superadmin) - skip validasi
-    console.log('👑 User tanpa lokasi default, skip validasi GPS');
+    console.log('⚠️ User tidak punya lokasi_default, skip validasi GPS');
     bukaModalKoreksiSaja();
     return;
   }
   
-  // Cari data lokasi default user dari _daftarLokasi
+  // Cari data lokasi default user
   const lokasiData = window._daftarLokasi || [];
+  console.log('📍 Total lokasi di cache:', lokasiData.length);
+  
   const lokasiUser = lokasiData.find(l => 
     String(l.id_lokasi).trim().toUpperCase() === String(lokasiDefault).trim().toUpperCase()
   );
   
   if (!lokasiUser) {
-    console.warn('⚠️ Lokasi default user tidak ditemukan di daftar lokasi');
+    console.warn('⚠️ Lokasi default user (' + lokasiDefault + ') tidak ditemukan di daftar lokasi');
+    // Fallback: tetap izinkan jika lokasi tidak ditemukan
     bukaModalKoreksiSaja();
     return;
   }
@@ -2947,12 +2962,10 @@ window.openModalKoreksi = function() {
   console.log('   Valid:', jarak <= radius);
   
   if (jarak > radius) {
-    // DI LUAR RADIUS - TOLAK
     showToast('⛔ Anda berada di luar radius lokasi kerja (' + Math.round(jarak) + 'm > ' + radius + 'm). Pengajuan koreksi hanya bisa dilakukan di lokasi kerja.', 'error');
     return;
   }
   
-  // DALAM RADIUS - LANJUT
   console.log('✅ User dalam radius lokasi kerja, buka modal koreksi');
   bukaModalKoreksiSaja();
 };
@@ -2974,20 +2987,21 @@ function bukaModalKoreksiSaja() {
   document.getElementById('koreksiAlasan').value = '';
   document.getElementById('koreksiJenis').value = 'Lupa Absen Masuk';
   document.getElementById('koreksiJam').value = '08:00';
-
-  // TAMBAHKAN BARIS INI - Paksa warna teks jam
-  const jamInput = document.getElementById('koreksiJam');
-  jamInput.style.color = '#0f172a';
-  jamInput.style.backgroundColor = '#f8fafc';
-  jamInput.style.fontWeight = '700';
-  jamInput.style.fontSize = '16px';
   
-  // Tampilkan info lokasi di modal (transparansi)
+  // Tampilkan info lokasi di modal
   const infoLokasiEl = document.getElementById('infoLokasiKoreksi');
-  if (infoLokasiEl && gps) {
-    const lokasiNama = currentUser.lokasi_default || 'Tidak ditentukan';
-    infoLokasiEl.innerHTML = '<i class="fa-solid fa-location-dot text-green-500"></i> Lokasi Pengajuan: <b>' + lokasiNama + '</b> (GPS: ' + Math.round(gps.accuracy) + 'm)';
-    infoLokasiEl.className = 'text-[10px] text-green-600 dark:text-green-400 font-mono flex items-center gap-1 mb-2';
+  if (infoLokasiEl) {
+    const userRole = String(currentUser.role || '').trim().toLowerCase();
+    const isPrivileged = (userRole === 'admin' || userRole === 'hrd' || userRole === 'superadmin');
+    
+    if (isPrivileged) {
+      infoLokasiEl.innerHTML = '<i class="fa-solid fa-crown text-amber-500"></i> Akses Penuh ' + userRole.toUpperCase() + ' - Bebas mengajukan dari mana saja';
+      infoLokasiEl.className = 'text-[10px] text-amber-600 dark:text-amber-400 font-mono flex items-center gap-1 mb-2';
+    } else if (gps) {
+      const lokasiNama = currentUser.lokasi_default || 'Tidak ditentukan';
+      infoLokasiEl.innerHTML = '<i class="fa-solid fa-location-dot text-green-500"></i> Lokasi Pengajuan: <b>' + lokasiNama + '</b> (GPS: ' + Math.round(gps.accuracy) + 'm)';
+      infoLokasiEl.className = 'text-[10px] text-green-600 dark:text-green-400 font-mono flex items-center gap-1 mb-2';
+    }
   }
   
   modal.style.cssText = 'display:flex;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;padding:16px;';
@@ -3002,6 +3016,9 @@ window.closeModalKoreksi = function() {
   if (modal) {
     modal.style.display = 'none';
     modal.classList.add('hidden');
+    console.log('✅ Modal tertutup');
+  } else {
+    console.warn('⚠️ Modal tidak ditemukan saat close');
   }
 };
 
@@ -3018,10 +3035,14 @@ window.submitKoreksiAbsen = async function() {
     return;
   }
   
-  // Validasi format jam 24 jam (HH:mm)
   const jamValid = /^([01]\d|2[0-3]):([0-5]\d)$/.test(jam);
   if (!jam || !jamValid) {
     showToast('Jam tidak valid! Gunakan format 24 jam (contoh: 14:30)', 'warning');
+    return;
+  }
+  
+  if (!gps || !gps.lat || !gps.lng) {
+    showToast('⚠️ GPS tidak tersedia. Pengajuan dibatalkan.', 'error');
     return;
   }
   
@@ -3034,7 +3055,10 @@ window.submitKoreksiAbsen = async function() {
       jenis_koreksi: jenis,
       jam_koreksi: jam,
       alasan: alasan,
-      lokasi_id: currentUser.lokasi_default || 'LOK000'
+      lokasi_id: currentUser.lokasi_default || 'LOK000',
+      gps_lat: gps.lat,
+      gps_lng: gps.lng,
+      gps_accuracy: gps.accuracy
     };
     
     const response = await fetch(CONFIG.GAS_URL, {
@@ -3046,10 +3070,18 @@ window.submitKoreksiAbsen = async function() {
     
     if (result.status === 'success') {
       showToast('Pengajuan berhasil dikirim! Silahkan menunggu approval dari HRD.', 'success');
-      window.closeModalKoreksi();
-      if (window.loadRiwayatKoreksi) {
-        window.loadRiwayatKoreksi();
-      }
+      
+      // TUTUP MODAL DULU SEBELUM LOAD RIWAYAT
+      setTimeout(function() {
+        window.closeModalKoreksi();
+      }, 300);
+      
+      // Load riwayat setelah modal tertutup
+      setTimeout(function() {
+        if (window.loadRiwayatKoreksi) {
+          window.loadRiwayatKoreksi();
+        }
+      }, 600);
     } else {
       showToast('Gagal: ' + result.message, 'error');
     }
