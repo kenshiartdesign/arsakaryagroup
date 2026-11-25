@@ -2904,6 +2904,61 @@ function setupJamMask() {
 window.openModalKoreksi = function() {
   console.log('🔵 openModalKoreksi dipanggil');
   
+  // ===== VALIDASI LOKASI GPS SEBELUM BUKA MODAL =====
+  if (!gps || !gps.lat || !gps.lng) {
+    showToast('⚠️ GPS belum tersedia. Pastikan GPS aktif dan izinkan akses lokasi.', 'warning');
+    return;
+  }
+  
+  if (gps.accuracy > 100) {
+    showToast('⚠️ Akurasi GPS terlalu rendah (' + Math.round(gps.accuracy) + 'm). Tunggu hingga akurasi < 100m.', 'warning');
+    return;
+  }
+  
+  // Cek apakah user punya lokasi default
+  const lokasiDefault = currentUser.lokasi_default;
+  if (!lokasiDefault || lokasiDefault === '' || lokasiDefault === '-') {
+    // User tanpa lokasi default (admin/superadmin) - skip validasi
+    console.log('👑 User tanpa lokasi default, skip validasi GPS');
+    bukaModalKoreksiSaja();
+    return;
+  }
+  
+  // Cari data lokasi default user dari _daftarLokasi
+  const lokasiData = window._daftarLokasi || [];
+  const lokasiUser = lokasiData.find(l => 
+    String(l.id_lokasi).trim().toUpperCase() === String(lokasiDefault).trim().toUpperCase()
+  );
+  
+  if (!lokasiUser) {
+    console.warn('⚠️ Lokasi default user tidak ditemukan di daftar lokasi');
+    bukaModalKoreksiSaja();
+    return;
+  }
+  
+  // Hitung jarak GPS user ke lokasi default
+  const jarak = haversine(gps.lat, gps.lng, parseFloat(lokasiUser.latitude), parseFloat(lokasiUser.longitude));
+  const radius = parseInt(lokasiUser.radius) || 150;
+  
+  console.log('📍 Validasi Lokasi Koreksi:');
+  console.log('   Lokasi User:', lokasiUser.nama_lokasi);
+  console.log('   Jarak:', Math.round(jarak) + 'm');
+  console.log('   Radius:', radius + 'm');
+  console.log('   Valid:', jarak <= radius);
+  
+  if (jarak > radius) {
+    // DI LUAR RADIUS - TOLAK
+    showToast('⛔ Anda berada di luar radius lokasi kerja (' + Math.round(jarak) + 'm > ' + radius + 'm). Pengajuan koreksi hanya bisa dilakukan di lokasi kerja.', 'error');
+    return;
+  }
+  
+  // DALAM RADIUS - LANJUT
+  console.log('✅ User dalam radius lokasi kerja, buka modal koreksi');
+  bukaModalKoreksiSaja();
+};
+
+// Fungsi helper untuk buka modal (dipanggil setelah validasi lolos)
+function bukaModalKoreksiSaja() {
   let modal = document.getElementById('modalKoreksiAbsen');
   if (!modal) {
     alert('Modal tidak ditemukan!');
@@ -2918,23 +2973,28 @@ window.openModalKoreksi = function() {
   document.getElementById('koreksiTanggal').value = today;
   document.getElementById('koreksiAlasan').value = '';
   document.getElementById('koreksiJenis').value = 'Lupa Absen Masuk';
-  document.getElementById('koreksiJam').value = '08:00'; // Default jam 24 jam
-  
-  // TAMBAHKAN BARIS INI - Setup masking input jam
-  setupJamMask();
-  
- // TAMBAHKAN BARIS INI - Paksa warna teks jam
+  document.getElementById('koreksiJam').value = '08:00';
+
+  // TAMBAHKAN BARIS INI - Paksa warna teks jam
   const jamInput = document.getElementById('koreksiJam');
   jamInput.style.color = '#0f172a';
   jamInput.style.backgroundColor = '#f8fafc';
   jamInput.style.fontWeight = '700';
   jamInput.style.fontSize = '16px';
   
+  // Tampilkan info lokasi di modal (transparansi)
+  const infoLokasiEl = document.getElementById('infoLokasiKoreksi');
+  if (infoLokasiEl && gps) {
+    const lokasiNama = currentUser.lokasi_default || 'Tidak ditentukan';
+    infoLokasiEl.innerHTML = '<i class="fa-solid fa-location-dot text-green-500"></i> Lokasi Pengajuan: <b>' + lokasiNama + '</b> (GPS: ' + Math.round(gps.accuracy) + 'm)';
+    infoLokasiEl.className = 'text-[10px] text-green-600 dark:text-green-400 font-mono flex items-center gap-1 mb-2';
+  }
+  
   modal.style.cssText = 'display:flex;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;padding:16px;';
   modal.classList.remove('hidden');
   
   console.log('✅ Modal terbuka');
-};
+}
 
 window.closeModalKoreksi = function() {
   console.log('🔴 closeModalKoreksi dipanggil');
