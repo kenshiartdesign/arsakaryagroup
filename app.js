@@ -2867,9 +2867,10 @@ function closePengumumanModal() {
 }
 
 // ==========================================
-// FITUR KOREKSI ABSEN - VERSI AMAN
+// FITUR KOREKSI ABSEN - FINAL FIX
 // ==========================================
 
+// 1. DEFINISIKAN FUNGSI DI GLOBAL SCOPE
 window.openModalKoreksi = function() {
   console.log('🔵 openModalKoreksi dipanggil');
   
@@ -2879,7 +2880,7 @@ window.openModalKoreksi = function() {
     return;
   }
   
-  // Pindah ke body
+  // Pindah ke body jika belum
   if (modal.parentElement !== document.body) {
     document.body.appendChild(modal);
   }
@@ -2888,64 +2889,162 @@ window.openModalKoreksi = function() {
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('koreksiTanggal').value = today;
   document.getElementById('koreksiAlasan').value = '';
+  document.getElementById('koreksiJenis').value = 'Lupa Absen Masuk';
   
   // Tampilkan
   modal.style.cssText = 'display:flex;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;padding:16px;';
   modal.classList.remove('hidden');
   
-  // Attach event listener untuk tombol CLOSE (X)
-  const allButtons = modal.querySelectorAll('button');
-  console.log('🔍 Ditemukan ' + allButtons.length + ' tombol di modal');
-  
-  allButtons.forEach(function(btn, index) {
-    console.log('🔍 Tombol ' + index + ':', btn.textContent.trim());
-    
-    // Tombol X (close) - biasanya tombol pertama atau yang ada icon X
-    if (btn.innerHTML.includes('fa-xmark') || btn.innerHTML.includes('×') || index === 0) {
-      if (!btn.dataset.attached) {
-        btn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          console.log('🔴 Tombol X diklik');
-          modal.style.display = 'none';
-          modal.classList.add('hidden');
-        });
-        btn.dataset.attached = 'true';
-        console.log('✅ Event listener attached ke tombol X');
-      }
-    }
-    
-    // Tombol SUBMIT (Kirim Pengajuan) - biasanya tombol terakhir atau yang ada teks "KIRIM"
-    if (btn.textContent.includes('KIRIM') || btn.textContent.includes('Kirim')) {
-      if (!btn.dataset.attached) {
-        btn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          console.log('🟡 Tombol KIRIM diklik');
-          window.submitKoreksiAbsen();
-        });
-        btn.dataset.attached = 'true';
-        console.log('✅ Event listener attached ke tombol KIRIM');
-      }
-    }
-  });
-  
-  // Klik di luar untuk tutup
-  modal.onclick = function(e) {
-    if (e.target === modal) {
-      modal.style.display = 'none';
-      modal.classList.add('hidden');
-    }
-  };
-  
   console.log('✅ Modal terbuka');
 };
 
 window.closeModalKoreksi = function() {
+  console.log('🔴 closeModalKoreksi dipanggil');
   const modal = document.getElementById('modalKoreksiAbsen');
   if (modal) {
     modal.style.display = 'none';
     modal.classList.add('hidden');
   }
 };
+
+window.submitKoreksiAbsen = async function() {
+  console.log('🟡 submitKoreksiAbsen dipanggil');
+  
+  const tanggal = document.getElementById('koreksiTanggal').value;
+  const jenis = document.getElementById('koreksiJenis').value;
+  const alasan = document.getElementById('koreksiAlasan').value.trim();
+  
+  if (!tanggal || !alasan) {
+    showToast('Tanggal dan alasan wajib diisi!', 'warning');
+    return;
+  }
+  
+  showLoading(true);
+  try {
+    const payload = {
+      username: currentUser.username,
+      nama: currentUser.nama,
+      tanggal_koreksi: tanggal,
+      jenis_koreksi: jenis,
+      alasan: alasan,
+      lokasi_id: currentUser.lokasi_default || 'LOK000'
+    };
+    
+    const response = await fetch(CONFIG.GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'simpanKoreksiAbsen', data: payload })
+    });
+    
+    const result = await response.json();
+    
+    if (result.status === 'success') {
+      showToast('Pengajuan berhasil dikirim! Silahkan menunggu approval dari HRD.', 'success');
+      window.closeModalKoreksi();
+      if (window.loadRiwayatKoreksi) {
+        window.loadRiwayatKoreksi();
+      }
+    } else {
+      showToast('Gagal: ' + result.message, 'error');
+    }
+  } catch (e) {
+    showToast('Error koneksi: ' + e.message, 'error');
+  } finally {
+    showLoading(false);
+  }
+};
+
+window.loadRiwayatKoreksi = async function() {
+  console.log('📋 loadRiwayatKoreksi dipanggil');
+  
+  if (!currentUser) return;
+  const listEl = document.getElementById('listRiwayatKoreksi');
+  if (!listEl) return;
+  
+  listEl.innerHTML = '<p class="text-center text-slate-400 text-xs py-4"><i class="fa-solid fa-circle-notch fa-spin"></i> Memuat...</p>';
+  
+  try {
+    const res = await fetch(CONFIG.GAS_URL + '?action=getRiwayatKoreksi&username=' + encodeURIComponent(currentUser.username) + '&t=' + Date.now());
+    const result = await res.json();
+    
+    if (result.status !== 'success' || !result.data || result.data.length === 0) {
+      listEl.innerHTML = '<p class="text-center text-slate-400 text-xs py-4">Belum ada pengajuan.</p>';
+      return;
+    }
+    
+    listEl.innerHTML = result.data.map(item => {
+      const statusColor = item.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 
+                          item.status === 'REJECTED' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700';
+      const statusText = item.status === 'APPROVED' ? 'Disetujui' : 
+                         item.status === 'REJECTED' ? 'Ditolak' : 'Menunggu';
+      
+      return `
+        <div class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 mb-2">
+          <div class="flex justify-between items-start mb-2">
+            <p class="font-bold text-xs text-slate-700 dark:text-slate-200">${item.jenis_koreksi}</p>
+            <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${statusColor}">${statusText}</span>
+          </div>
+          <p class="text-[10px] text-slate-500 dark:text-slate-400">📅 ${item.tanggal_koreksi}</p>
+          <p class="text-[10px] text-slate-600 dark:text-slate-300 mt-1">💬 ${item.alasan}</p>
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    listEl.innerHTML = '<p class="text-center text-red-400 text-xs py-4">Error memuat data.</p>';
+  }
+};
+
+// 2. ATTACH EVENT LISTENER SETELAH DOM READY
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🔧 Attaching event listeners untuk koreksi...');
+  
+  // Tunggu modal ada di DOM
+  setTimeout(function() {
+    const modal = document.getElementById('modalKoreksiAbsen');
+    if (!modal) {
+      console.error('❌ Modal tidak ditemukan!');
+      return;
+    }
+    
+    // Cari tombol-tombol di dalam modal
+    const buttons = modal.querySelectorAll('button');
+    console.log('🔍 Ditemukan ' + buttons.length + ' tombol di modal');
+    
+    buttons.forEach(function(btn, index) {
+      const btnText = btn.textContent.trim();
+      console.log('🔍 Tombol ' + index + ': ' + btnText);
+      
+      // Tombol X (close) - biasanya tombol pertama atau yang ada icon X
+      if (btn.innerHTML.includes('fa-xmark') || btn.innerHTML.includes('×') || index === 0) {
+        btn.onclick = function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('🔴 Tombol X diklik');
+          window.closeModalKoreksi();
+        };
+        console.log('✅ Event listener attached ke tombol X');
+      }
+      
+      // Tombol SUBMIT (Kirim Pengajuan) - yang ada teks "KIRIM"
+      if (btnText.includes('KIRIM') || btnText.includes('Kirim')) {
+        btn.onclick = function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('🟡 Tombol KIRIM diklik');
+          window.submitKoreksiAbsen();
+        };
+        console.log('✅ Event listener attached ke tombol KIRIM');
+      }
+    });
+    
+    // Klik di luar modal untuk tutup
+    modal.onclick = function(e) {
+      if (e.target === modal) {
+        console.log('🔴 Klik di luar modal');
+        window.closeModalKoreksi();
+      }
+    };
+  }, 500);
+});
 
 window.loadRiwayatKoreksi = async function() {
   if (!currentUser) return;
