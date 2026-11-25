@@ -2923,6 +2923,13 @@ window.openModalKoreksi = function() {
   // TAMBAHKAN BARIS INI - Setup masking input jam
   setupJamMask();
   
+ // TAMBAHKAN BARIS INI - Paksa warna teks jam
+  const jamInput = document.getElementById('koreksiJam');
+  jamInput.style.color = '#0f172a';
+  jamInput.style.backgroundColor = '#f8fafc';
+  jamInput.style.fontWeight = '700';
+  jamInput.style.fontSize = '16px';
+  
   modal.style.cssText = 'display:flex;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999999;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;padding:16px;';
   modal.classList.remove('hidden');
   
