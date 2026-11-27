@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ARSA KARYA - Admin Panel</title>
+<meta name="theme-color" content="#f59e0b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ARSA Admin">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest-admin.json">
+<link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1PfAOVH8gTd2QK4ayJy9yhF21EFIQ__JJ">
+<style>
+body{margin:0;font-family:'Poppins',sans-serif;background:#050806;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.container{max-width:400px;text-align:center}
+.logo{width:80px;margin-bottom:20px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+h1{font-size:22px;margin:0 0 8px;color:#fbbf24}
+p{font-size:13px;color:#94a3b8;margin:0 0 20px}
+.btn{display:block;width:100%;padding:14px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;border:none;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;margin-bottom:10px;text-decoration:none}
+.btn:active{transform:scale(0.98)}
+.btn-secondary{background:rgba(255,255,255,0.1);color:#fff}
+.steps{text-align:left;background:rgba(255,255,255,0.05);padding:15px;border-radius:12px;margin-top:20px;font-size:12px;color:#cbd5e1}
+.steps b{color:#fbbf24}
+</style>
+</head>
+<body>
+<div class="container">
+  <img src="https://lh3.googleusercontent.com/d/1PfAOVH8gTd2QK4ayJy9yhF21EFIQ__JJ" class="logo" alt="ARSA">
+  <h1>ARSA KARYA GROUP</h1>
+  <p>Admin Command Center</p>
+  
+  <button class="btn" onclick="installApp()">📱 Install Aplikasi</button>
+  <a href="https://script.google.com/macros/s/AKfycbypofLYPOd7q_SBKEx7_eYXktqRp9b8cPNO4hO1yUE4BdTInnAuHRHN-LpGCqMzm2RM/exec?page=admin" class="btn btn-secondary">🌐 Buka di Browser</a>
+  
+  <div class="steps" id="installSteps"></div>
+</div>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbypofLYPOd7q_SBKEx7_eYXktqRp9b8cPNO4hO1yUE4BdTInnAuHRHN-LpGCqMzm2RM/exec?page=admin';
+const ua = navigator.userAgent.toLowerCase();
+const isIOS = /iphone|ipad|ipod/.test(ua);
+const isAndroid = ua.includes('android');
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
+function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+  } else if (isIOS) {
+    alert('📱 Cara Install di iPhone:\n\n1. Tap tombol Share (ikon kotak dengan panah ke atas)\n2. Scroll ke bawah, pilih "Add to Home Screen"\n3. Tap "Add"\n\nAplikasi akan muncul di Home Screen Anda!');
+  } else {
+    window.location.href = APPS_SCRIPT_URL;
+  }
+}
+
+// Tampilkan panduan
+const stepsEl = document.getElementById('installSteps');
+if (isIOS) {
+  stepsEl.innerHTML = '<b>📱 Untuk iPhone (Safari):</b><br>1. Tap tombol <b>Share</b> di bawah layar<br>2. Pilih <b>"Add to Home Screen"</b><br>3. Tap <b>"Add"</b><br><br>Atau tap tombol "Install Aplikasi" di atas.';
+} else if (isAndroid) {
+  stepsEl.innerHTML = '<b>📱 Untuk Android (Chrome):</b><br>1. Tap <b>⋮</b> di pojok kanan atas<br>2. Pilih <b>"Tambahkan ke layar utama"</b><br>3. Tap <b>"Tambahkan"</b><br><br>Atau tap tombol "Install Aplikasi" di atas.';
+} else {
+  stepsEl.innerHTML = '<b>💻 Untuk Desktop:</b><br>1. Klik ikon <b>install</b> di address bar<br>2. Atau buka <b>Menu → Install App</b><br><br>Atau tap tombol "Buka di Browser" untuk akses langsung.';
+}
+</script>
+</body>
+</html>
