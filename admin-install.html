@@ -3,23 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-<title>ARSA KARYA GROUP - Admin</title>
+<title>ARSA Admin - Command Center</title>
 
-<!-- PWA Meta -->
+<!-- PWA Meta (BERBEDA dari user app) -->
 <meta name="theme-color" content="#f59e0b">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ARSA Admin">
+<meta name="application-name" content="ARSA Admin">
 <link rel="manifest" href="manifest-admin.json">
-<link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1PfAOVH8gTd2QK4ayJy9yhF21EFIQ__JJ">
-<link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1PfAOVH8gTd2QK4ayJy9yhF21EFIQ__JJ">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSIjMGUxMjA5Ii8+PGNpcmNsZSBjeD0iOTAiIGN5PSI3NSIgcj0iNDUiIGZpbGw9IiNmNTllMGIiLz48dGV4dCB4PSI5MCIgeT0iODciIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI0NCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiMwMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkE8L3RleHQ+PHRleHQgeD0iOTAiIHk9IjE1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iI2Y1OWUwYiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QURNSU48L3RleHQ+PC9zdmc+">
 
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-html, body { height:100%; background:#050806; font-family:'Poppins',system-ui,sans-serif; overflow:hidden; }
+html, body { height:100%; background:#050806; font-family:system-ui,-apple-system,sans-serif; overflow:hidden; }
 
-/* Header bar (hanya tampil saat belum standalone) */
+/* Header bar */
 #topBar {
   position:fixed; top:0; left:0; right:0; z-index:100;
   background:linear-gradient(135deg,#1a1f1c,#0d120f);
@@ -31,8 +31,16 @@ body.standalone #topBar { display:none; }
 body.standalone #appFrame { top:0 !important; }
 
 .brand { display:flex; align-items:center; gap:10px; min-width:0; }
-.brand img { width:32px; height:32px; border-radius:8px; object-fit:contain; background:#000; }
-.brand span { font-weight:800; font-size:14px; color:#fbbf24; letter-spacing:0.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.brand-icon {
+  width:36px; height:36px; border-radius:10px;
+  background:linear-gradient(135deg,#f59e0b,#d97706);
+  display:flex; align-items:center; justify-content:center;
+  font-weight:900; font-size:18px; color:#000;
+  box-shadow:0 2px 8px rgba(245,158,11,0.4);
+}
+.brand-text { display:flex; flex-direction:column; }
+.brand-text .name { font-weight:800; font-size:14px; color:#fbbf24; letter-spacing:0.5px; }
+.brand-text .sub { font-size:9px; color:#94a3b8; letter-spacing:1px; text-transform:uppercase; }
 
 .actions { display:flex; gap:8px; flex-shrink:0; }
 .act-btn {
@@ -57,11 +65,19 @@ body.standalone #appFrame { top:0 !important; }
   transition:opacity .4s;
 }
 #splash.hide { opacity:0; pointer-events:none; }
-#splash img { width:72px; animation:float 2.5s ease-in-out infinite; }
-#splash p { color:#fbbf24; font-weight:700; font-size:13px; letter-spacing:2px; text-transform:uppercase; }
+.splash-icon {
+  width:80px; height:80px; border-radius:20px;
+  background:linear-gradient(135deg,#f59e0b,#d97706);
+  display:flex; align-items:center; justify-content:center;
+  font-weight:900; font-size:36px; color:#000;
+  box-shadow:0 8px 32px rgba(245,158,11,0.4);
+  animation:float 2.5s ease-in-out infinite;
+}
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+#splash .title { color:#fbbf24; font-weight:800; font-size:16px; letter-spacing:2px; text-transform:uppercase; }
+#splash .subtitle { color:#94a3b8; font-size:11px; letter-spacing:3px; text-transform:uppercase; margin-top:-8px; }
 .spinner { width:34px; height:34px; border:3px solid rgba(251,191,36,0.2); border-top-color:#f59e0b; border-radius:50%; animation:spin 0.8s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
-@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
 
 /* Offline overlay */
 #offline {
@@ -82,6 +98,15 @@ body.standalone #appFrame { top:0 !important; }
   font-size:12px; font-weight:700; z-index:200; transition:transform .3s; max-width:90%;
 }
 #toast.show { transform:translateX(-50%) translateY(0); }
+
+/* Info badge */
+.info-badge {
+  position:fixed; bottom:10px; left:50%; transform:translateX(-50%);
+  background:rgba(251,191,36,0.15); border:1px solid rgba(251,191,36,0.3);
+  color:#fbbf24; padding:6px 14px; border-radius:20px;
+  font-size:10px; font-weight:700; z-index:50;
+  display:flex; align-items:center; gap:6px;
+}
 </style>
 </head>
 <body>
@@ -89,8 +114,11 @@ body.standalone #appFrame { top:0 !important; }
 <!-- Header -->
 <div id="topBar">
   <div class="brand">
-    <img src="https://lh3.googleusercontent.com/d/1PfAOVH8gTd2QK4ayJy9yhF21EFIQ__JJ" alt="ARSA">
-    <span>ARSA KARYA GROUP</span>
+    <div class="brand-icon">A</div>
+    <div class="brand-text">
+      <span class="name">ARSA ADMIN</span>
+      <span class="sub">Command Center</span>
+    </div>
   </div>
   <div class="actions">
     <button class="act-btn" onclick="reloadApp()" title="Refresh"><span>🔄</span> Refresh</button>
@@ -100,15 +128,17 @@ body.standalone #appFrame { top:0 !important; }
 
 <!-- Splash loading -->
 <div id="splash">
-  <img src="https://lh3.googleusercontent.com/d/1PfAOVH8gTd2QK4ayJy9yhF21EFIQ__JJ" alt="ARSA">
-  <p>ARSA ADMIN</p>
+  <div class="splash-icon">A</div>
+  <div class="title">ARSA ADMIN</div>
+  <div class="subtitle">Command Center</div>
   <div class="spinner"></div>
 </div>
 
 <!-- App iframe -->
-<iframe id="appFrame" src="https://script.google.com/macros/s/AKfycbypofLYPOd7q_SBKEx7_eYXktqRp9b8cPNO4hO1yUE4BdTInnAuHRHN-LpGCqMzm2RM/exec?page=admin"
-        allow="camera; microphone; geolocation; fullscreen"
-        onload="hideSplash()"></iframe>
+<iframe id="appFrame" 
+  src="https://script.google.com/macros/s/AKfycbypofLYPOd7q_SBKEx7_eYXktqRp9b8cPNO4hO1yUE4BdTInnAuHRHN-LpGCqMzm2RM/exec?page=admin"
+  allow="camera; microphone; geolocation; fullscreen"
+  onload="hideSplash()"></iframe>
 
 <!-- Offline -->
 <div id="offline">
@@ -120,8 +150,14 @@ body.standalone #appFrame { top:0 !important; }
 
 <div id="toast"></div>
 
+<!-- Info badge (hilang setelah install) -->
+<div class="info-badge" id="infoBadge">
+  <span>🛡️</span>
+  <span>ARSA <b>ADMIN</b> — Bukan aplikasi absensi karyawan</span>
+</div>
+
 <script>
-// ===== 1. REGISTER SERVICE WORKER (WAJIB untuk install prompt) =====
+// ===== 1. REGISTER SERVICE WORKER =====
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('service-worker-admin.js')
@@ -130,11 +166,15 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// ===== 2. DETEKSI STANDALONE (sudah di-install) =====
+// ===== 2. DETEKSI STANDALONE =====
 function checkStandalone() {
   const standalone = window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true;
-  if (standalone) document.body.classList.add('standalone');
+  if (standalone) {
+    document.body.classList.add('standalone');
+    const badge = document.getElementById('infoBadge');
+    if (badge) badge.style.display = 'none';
+  }
 }
 checkStandalone();
 window.matchMedia('(display-mode: standalone)').addEventListener('change', checkStandalone);
@@ -152,7 +192,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
 async function doInstall() {
   if (!deferredPrompt) {
-    showToast('⚠️ Chrome belum izinkan. Coba menu ⋮ → "Install app"');
+    showToast('⚠️ Tap menu ⋮ → "Install app"');
     return;
   }
   deferredPrompt.prompt();
@@ -166,14 +206,16 @@ async function doInstall() {
 
 window.addEventListener('appinstalled', () => {
   btnInstall.classList.add('hidden');
-  showToast('🎉 ARSA Admin ter-install di Home Screen!');
+  const badge = document.getElementById('infoBadge');
+  if (badge) badge.style.display = 'none';
+  showToast('🎉 ARSA Admin ter-install!');
 });
 
 // ===== 4. HELPER =====
 function reloadApp() {
   const f = document.getElementById('appFrame');
   document.getElementById('splash').classList.remove('hide');
-  f.src = f.src; // reload iframe
+  f.src = f.src;
   setTimeout(hideSplash, 4000);
 }
 function hideSplash() {
