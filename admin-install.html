@@ -2,73 +2,194 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ARSA KARYA - Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<title>ARSA KARYA GROUP - Admin</title>
+
+<!-- PWA Meta -->
 <meta name="theme-color" content="#f59e0b">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ARSA Admin">
-<meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest-admin.json">
 <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1PfAOVH8gTd2QK4ayJy9yhF21EFIQ__JJ">
+<link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1PfAOVH8gTd2QK4ayJy9yhF21EFIQ__JJ">
+
 <style>
-body{margin:0;font-family:'Poppins',sans-serif;background:#050806;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-.container{max-width:400px;text-align:center}
-.logo{width:80px;margin-bottom:20px;animation:float 3s ease-in-out infinite}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-h1{font-size:22px;margin:0 0 8px;color:#fbbf24}
-p{font-size:13px;color:#94a3b8;margin:0 0 20px}
-.btn{display:block;width:100%;padding:14px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;border:none;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;margin-bottom:10px;text-decoration:none}
-.btn:active{transform:scale(0.98)}
-.btn-secondary{background:rgba(255,255,255,0.1);color:#fff}
-.steps{text-align:left;background:rgba(255,255,255,0.05);padding:15px;border-radius:12px;margin-top:20px;font-size:12px;color:#cbd5e1}
-.steps b{color:#fbbf24}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; background:#050806; font-family:'Poppins',system-ui,sans-serif; overflow:hidden; }
+
+/* Header bar (hanya tampil saat belum standalone) */
+#topBar {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  background:linear-gradient(135deg,#1a1f1c,#0d120f);
+  border-bottom:1px solid rgba(251,191,36,0.2);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 14px; gap:10px;
+}
+body.standalone #topBar { display:none; }
+body.standalone #appFrame { top:0 !important; }
+
+.brand { display:flex; align-items:center; gap:10px; min-width:0; }
+.brand img { width:32px; height:32px; border-radius:8px; object-fit:contain; background:#000; }
+.brand span { font-weight:800; font-size:14px; color:#fbbf24; letter-spacing:0.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+.actions { display:flex; gap:8px; flex-shrink:0; }
+.act-btn {
+  height:36px; padding:0 14px; border-radius:10px; border:1px solid rgba(251,191,36,0.3);
+  background:rgba(251,191,36,0.1); color:#fbbf24; font-weight:700; font-size:12px;
+  cursor:pointer; display:flex; align-items:center; gap:6px; transition:all .2s;
+}
+.act-btn:active { transform:scale(0.95); }
+#btnInstall { background:linear-gradient(135deg,#f59e0b,#d97706); color:#000; border:none; box-shadow:0 4px 14px rgba(245,158,11,0.4); }
+#btnInstall.hidden { display:none; }
+
+/* Iframe app */
+#appFrame {
+  position:fixed; top:56px; left:0; right:0; bottom:0;
+  width:100%; height:calc(100% - 56px); border:0; background:#050806;
+}
+
+/* Loading splash */
+#splash {
+  position:fixed; inset:0; z-index:90; background:#050806;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+  transition:opacity .4s;
+}
+#splash.hide { opacity:0; pointer-events:none; }
+#splash img { width:72px; animation:float 2.5s ease-in-out infinite; }
+#splash p { color:#fbbf24; font-weight:700; font-size:13px; letter-spacing:2px; text-transform:uppercase; }
+.spinner { width:34px; height:34px; border:3px solid rgba(251,191,36,0.2); border-top-color:#f59e0b; border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+/* Offline overlay */
+#offline {
+  position:fixed; inset:0; z-index:120; background:rgba(5,8,6,0.96);
+  display:none; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+  color:#f1f5f9; text-align:center; padding:24px;
+}
+#offline.show { display:flex; }
+#offline .icon { font-size:48px; }
+#offline h3 { color:#fbbf24; font-size:16px; }
+#offline p { font-size:12px; color:#94a3b8; max-width:280px; }
+#offline button { margin-top:8px; padding:10px 24px; border-radius:10px; background:#f59e0b; color:#000; font-weight:800; border:none; cursor:pointer; }
+
+/* Toast */
+#toast {
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(80px);
+  background:rgba(16,185,129,0.95); color:#fff; padding:10px 18px; border-radius:10px;
+  font-size:12px; font-weight:700; z-index:200; transition:transform .3s; max-width:90%;
+}
+#toast.show { transform:translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
-<div class="container">
-  <img src="https://lh3.googleusercontent.com/d/1PfAOVH8gTd2QK4ayJy9yhF21EFIQ__JJ" class="logo" alt="ARSA">
-  <h1>ARSA KARYA GROUP</h1>
-  <p>Admin Command Center</p>
-  
-  <button class="btn" onclick="installApp()">📱 Install Aplikasi</button>
-  <a href="https://script.google.com/macros/s/AKfycbypofLYPOd7q_SBKEx7_eYXktqRp9b8cPNO4hO1yUE4BdTInnAuHRHN-LpGCqMzm2RM/exec?page=admin" class="btn btn-secondary">🌐 Buka di Browser</a>
-  
-  <div class="steps" id="installSteps"></div>
+
+<!-- Header -->
+<div id="topBar">
+  <div class="brand">
+    <img src="https://lh3.googleusercontent.com/d/1PfAOVH8gTd2QK4ayJy9yhF21EFIQ__JJ" alt="ARSA">
+    <span>ARSA KARYA GROUP</span>
+  </div>
+  <div class="actions">
+    <button class="act-btn" onclick="reloadApp()" title="Refresh"><span>🔄</span> Refresh</button>
+    <button class="act-btn hidden" id="btnInstall" onclick="doInstall()"><span>📲</span> Install</button>
+  </div>
 </div>
 
-<script>
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbypofLYPOd7q_SBKEx7_eYXktqRp9b8cPNO4hO1yUE4BdTInnAuHRHN-LpGCqMzm2RM/exec?page=admin';
-const ua = navigator.userAgent.toLowerCase();
-const isIOS = /iphone|ipad|ipod/.test(ua);
-const isAndroid = ua.includes('android');
+<!-- Splash loading -->
+<div id="splash">
+  <img src="https://lh3.googleusercontent.com/d/1PfAOVH8gTd2QK4ayJy9yhF21EFIQ__JJ" alt="ARSA">
+  <p>ARSA ADMIN</p>
+  <div class="spinner"></div>
+</div>
 
-let deferredPrompt;
+<!-- App iframe -->
+<iframe id="appFrame" src="https://script.google.com/macros/s/AKfycbypofLYPOd7q_SBKEx7_eYXktqRp9b8cPNO4hO1yUE4BdTInnAuHRHN-LpGCqMzm2RM/exec?page=admin"
+        allow="camera; microphone; geolocation; fullscreen"
+        onload="hideSplash()"></iframe>
+
+<!-- Offline -->
+<div id="offline">
+  <div class="icon">📡</div>
+  <h3>Tidak Ada Koneksi Internet</h3>
+  <p>Admin panel membutuhkan internet untuk mengambil data. Periksa koneksi WiFi/data Anda.</p>
+  <button onclick="reloadApp()">Coba Lagi</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ===== 1. REGISTER SERVICE WORKER (WAJIB untuk install prompt) =====
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker-admin.js')
+      .then(reg => console.log('[PWA] SW OK:', reg.scope))
+      .catch(err => console.log('[PWA] SW fail:', err));
+  });
+}
+
+// ===== 2. DETEKSI STANDALONE (sudah di-install) =====
+function checkStandalone() {
+  const standalone = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+  if (standalone) document.body.classList.add('standalone');
+}
+checkStandalone();
+window.matchMedia('(display-mode: standalone)').addEventListener('change', checkStandalone);
+
+// ===== 3. INSTALL PROMPT =====
+let deferredPrompt = null;
+const btnInstall = document.getElementById('btnInstall');
+
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
+  btnInstall.classList.remove('hidden');
+  showToast('📲 Aplikasi siap di-install!');
 });
 
-function installApp() {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
-  } else if (isIOS) {
-    alert('📱 Cara Install di iPhone:\n\n1. Tap tombol Share (ikon kotak dengan panah ke atas)\n2. Scroll ke bawah, pilih "Add to Home Screen"\n3. Tap "Add"\n\nAplikasi akan muncul di Home Screen Anda!');
-  } else {
-    window.location.href = APPS_SCRIPT_URL;
+async function doInstall() {
+  if (!deferredPrompt) {
+    showToast('⚠️ Chrome belum izinkan. Coba menu ⋮ → "Install app"');
+    return;
   }
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') {
+    showToast('✅ Instalasi dimulai...');
+    btnInstall.classList.add('hidden');
+  }
+  deferredPrompt = null;
 }
 
-// Tampilkan panduan
-const stepsEl = document.getElementById('installSteps');
-if (isIOS) {
-  stepsEl.innerHTML = '<b>📱 Untuk iPhone (Safari):</b><br>1. Tap tombol <b>Share</b> di bawah layar<br>2. Pilih <b>"Add to Home Screen"</b><br>3. Tap <b>"Add"</b><br><br>Atau tap tombol "Install Aplikasi" di atas.';
-} else if (isAndroid) {
-  stepsEl.innerHTML = '<b>📱 Untuk Android (Chrome):</b><br>1. Tap <b>⋮</b> di pojok kanan atas<br>2. Pilih <b>"Tambahkan ke layar utama"</b><br>3. Tap <b>"Tambahkan"</b><br><br>Atau tap tombol "Install Aplikasi" di atas.';
-} else {
-  stepsEl.innerHTML = '<b>💻 Untuk Desktop:</b><br>1. Klik ikon <b>install</b> di address bar<br>2. Atau buka <b>Menu → Install App</b><br><br>Atau tap tombol "Buka di Browser" untuk akses langsung.';
+window.addEventListener('appinstalled', () => {
+  btnInstall.classList.add('hidden');
+  showToast('🎉 ARSA Admin ter-install di Home Screen!');
+});
+
+// ===== 4. HELPER =====
+function reloadApp() {
+  const f = document.getElementById('appFrame');
+  document.getElementById('splash').classList.remove('hide');
+  f.src = f.src; // reload iframe
+  setTimeout(hideSplash, 4000);
 }
+function hideSplash() {
+  document.getElementById('splash').classList.add('hide');
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ===== 5. ONLINE/OFFLINE =====
+window.addEventListener('offline', () => document.getElementById('offline').classList.add('show'));
+window.addEventListener('online', () => document.getElementById('offline').classList.remove('show'));
+if (!navigator.onLine) document.getElementById('offline').classList.add('show');
 </script>
 </body>
 </html>
