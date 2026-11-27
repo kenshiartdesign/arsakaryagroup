@@ -22,6 +22,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+  // Jangan intercept request ke GAS atau Google (biarkan iframe handle sendiri)
   if (url.hostname.includes('script.google.com') ||
       url.hostname.includes('googleusercontent.com')) {
     return;
