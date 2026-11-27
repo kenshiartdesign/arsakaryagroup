@@ -1,0 +1,25 @@
+{
+  "name": "ARSA KARYA - Admin Panel",
+  "short_name": "ARSA ADM",
+  "description": "Dashboard Admin & HRD ARSA KARYA GROUP",
+  "start_url": "/arsakaryagroup/admin/",
+  "scope": "/arsakaryagroup/admin/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#050806",
+  "theme_color": "#f59e0b",
+  "icons": [
+    {
+      "src": "/arsakaryagroup/logo-AKI.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/arsakaryagroup/logo-AKI.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
