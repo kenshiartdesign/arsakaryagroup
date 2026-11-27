@@ -25,10 +25,10 @@ body.standalone #appFrame{top:0!important}
 .brand-text .name{font-weight:800;font-size:14px;color:#fbbf24;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .brand-text .sub{font-size:9px;color:#94a3b8;letter-spacing:1px;text-transform:uppercase}
 .actions{display:flex;gap:8px;flex-shrink:0}
-.act-btn{height:36px;padding:0 14px;border-radius:10px;border:1px solid rgba(251,191,36,.3);background:rgba(251,191,36,.1);color:#fbbf24;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s}
+.act-btn{height:36px;padding:0 12px;border-radius:10px;border:1px solid rgba(251,191,36,.3);background:rgba(251,191,36,.1);color:#fbbf24;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s}
 .act-btn:active{transform:scale(.95)}
-#btnInstall{background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;border:none;box-shadow:0 4px 14px rgba(245,158,11,.4)}
-#btnInstall.hidden{display:none!important}
+#btnInstall{background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;border:none;box-shadow:0 4px 14px rgba(245,158,11,.4);animation:pulseBtn 2.5s ease-in-out infinite}
+@keyframes pulseBtn{0%,100%{box-shadow:0 4px 14px rgba(245,158,11,.4),0 0 0 0 rgba(245,158,11,.6)}50%{box-shadow:0 4px 14px rgba(245,158,11,.4),0 0 0 10px rgba(245,158,11,0)}}
 #appFrame{position:fixed;top:56px;left:0;right:0;bottom:0;width:100%;height:calc(100% - 56px);border:0;background:#050806}
 #splash{position:fixed;inset:0;z-index:90;background:#050806;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .4s}
 #splash.hide{opacity:0;pointer-events:none}
@@ -44,11 +44,26 @@ body.standalone #appFrame{top:0!important}
 #offline h3{color:#fbbf24;font-size:16px}
 #offline p{font-size:12px;color:#94a3b8;max-width:280px}
 #offline button{margin-top:8px;padding:10px 24px;border-radius:10px;background:#f59e0b;color:#000;font-weight:800;border:none;cursor:pointer}
-#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(16,185,129,.95);color:#fff;padding:10px 18px;border-radius:10px;font-size:12px;font-weight:700;z-index:200;transition:transform .3s;max-width:90%}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(16,185,129,.95);color:#fff;padding:10px 18px;border-radius:10px;font-size:12px;font-weight:700;z-index:300;transition:transform .3s;max-width:90%}
 #toast.show{transform:translateX(-50%) translateY(0)}
+#guideModal{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px}
+#guideModal.show{display:flex}
+.gbox{background:linear-gradient(135deg,#1a1f1c,#0d120f);border:1px solid rgba(251,191,36,.3);border-radius:20px;padding:24px;max-width:400px;width:100%;animation:pop .3s cubic-bezier(.16,1,.3,1)}
+@keyframes pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+.gbox h3{color:#fbbf24;font-size:16px;font-weight:800;text-align:center;margin-bottom:4px}
+.gbox .gsub{color:#94a3b8;font-size:11px;text-align:center;margin-bottom:14px}
+.gstep{background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);border-radius:12px;padding:14px;margin-bottom:14px}
+.gstep p{color:#fbbf24;font-weight:700;font-size:12px;margin-bottom:8px}
+.gstep ol{color:#e2e8f0;font-size:12px;line-height:1.9;padding-left:18px;margin:0}
+.gstep b{color:#fbbf24}
+.gbtns{display:flex;gap:10px}
+.gbtns button{flex:1;padding:12px;border-radius:10px;font-weight:800;font-size:13px;cursor:pointer;border:none}
+.gbtn-close{background:rgba(255,255,255,.08);color:#cbd5e1;border:1px solid rgba(255,255,255,.1)!important}
+.gbtn-copy{background:linear-gradient(135deg,#f59e0b,#d97706);color:#000}
 </style>
 </head>
 <body>
+
 <div id="topBar">
   <div class="brand">
     <img src="../logo-AKI.png" alt="ARSA">
@@ -58,66 +73,122 @@ body.standalone #appFrame{top:0!important}
     </div>
   </div>
   <div class="actions">
-    <button class="act-btn" onclick="reloadApp()">🔄 Refresh</button>
-    <button class="act-btn hidden" id="btnInstall" onclick="doInstall()">📲 Install</button>
+    <button class="act-btn" onclick="reloadApp()">🔄</button>
+    <button class="act-btn" id="btnInstall" onclick="doInstall()">📲 Install</button>
   </div>
 </div>
+
 <div id="splash">
   <img src="../logo-AKI.png" alt="ARSA">
   <div class="title">ARSA ADMIN</div>
   <div class="subtitle">Command Center</div>
   <div class="spinner"></div>
 </div>
+
 <iframe id="appFrame"
   src="https://script.google.com/macros/s/AKfycbypofLYPOd7q_SBKEx7_eYXktqRp9b8cPNO4hO1yUE4BdTInnAuHRHN-LpGCqMzm2RM/exec?page=admin"
   allow="camera; microphone; geolocation; fullscreen"
   onload="hideSplash()"></iframe>
+
 <div id="offline">
   <div class="icon">📡</div>
   <h3>Tidak Ada Koneksi Internet</h3>
   <p>Admin panel membutuhkan internet untuk mengambil data.</p>
   <button onclick="reloadApp()">Coba Lagi</button>
 </div>
+
 <div id="toast"></div>
+
+<div id="guideModal" onclick="if(event.target===this)closeGuide()">
+  <div class="gbox">
+    <h3>📲 Install ARSA Admin</h3>
+    <p class="gsub">Jadikan aplikasi di Home Screen HP Anda</p>
+    <div class="gstep" id="guideContent"></div>
+    <div class="gbtns">
+      <button class="gbtn-close" onclick="closeGuide()">Tutup</button>
+      <button class="gbtn-copy" onclick="copyLink()">🔗 Copy Link</button>
+    </div>
+  </div>
+</div>
+
 <script>
+const ADMIN_URL = 'https://kenshiartdesign.github.io/arsakaryagroup/admin/';
+
+// ===== SERVICE WORKER =====
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('service-worker.js')
-      .then(reg => console.log('[PWA Admin] SW OK, scope:', reg.scope))
-      .catch(err => console.log('[PWA Admin] SW fail:', err));
+      .then(reg => console.log('[Admin PWA] SW OK:', reg.scope))
+      .catch(err => console.log('[Admin PWA] SW fail:', err));
   });
 }
+
+// ===== STANDALONE =====
 function checkStandalone(){
   const s = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-  if (s) document.body.classList.add('standalone');
+  if (s) {
+    document.body.classList.add('standalone');
+    document.getElementById('btnInstall').style.display = 'none';
+  }
 }
 checkStandalone();
 window.matchMedia('(display-mode: standalone)').addEventListener('change', checkStandalone);
 
+// ===== INSTALL =====
 let deferredPrompt = null;
-const btnInstall = document.getElementById('btnInstall');
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  btnInstall.classList.remove('hidden');
-  showToast('📲 Aplikasi siap di-install!');
+  showToast('📲 Tap tombol Install!');
 });
-async function doInstall(){
-  if (!deferredPrompt){ showToast('⚠️ Tap menu ⋮ → "Install app"'); return; }
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  if (outcome === 'accepted'){ showToast('✅ Instalasi dimulai...'); btnInstall.classList.add('hidden'); }
-  deferredPrompt = null;
-}
 window.addEventListener('appinstalled', () => {
-  btnInstall.classList.add('hidden');
+  document.getElementById('btnInstall').style.display = 'none';
   showToast('🎉 ARSA Admin ter-install!');
 });
+
+function doInstall(){
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(r => {
+      if (r.outcome === 'accepted') showToast('✅ Instalasi dimulai...');
+      deferredPrompt = null;
+    });
+    return;
+  }
+  openGuide();
+}
+
+// ===== PANDUAN MANUAL =====
+function openGuide(){
+  const ua = navigator.userAgent.toLowerCase();
+  const isIOS = /iphone|ipad|ipod/.test(ua);
+  const el = document.getElementById('guideContent');
+  if (isIOS) {
+    el.innerHTML = '<p>📱 iPhone / iPad (Safari):</p><ol>' +
+      '<li>Tap tombol <b>Share</b> (kotak dengan panah ↑) di bawah Safari</li>' +
+      '<li>Scroll, pilih <b>"Add to Home Screen"</b></li>' +
+      '<li>Tap <b>"Add"</b> di kanan atas</li>' +
+      '<li>Selesai! Buka dari Home Screen 🎉</li></ol>';
+  } else {
+    el.innerHTML = '<p>📱 Android (Chrome):</p><ol>' +
+      '<li>Tap menu <b>⋮</b> (titik tiga) di pojok kanan atas Chrome</li>' +
+      '<li>Pilih <b>"Install app"</b> atau <b>"Tambahkan ke layar utama"</b></li>' +
+      '<li>Konfirmasi <b>"Install"</b></li>' +
+      '<li>Aplikasi <b>ARSA ADM</b> muncul di Home Screen 🎉</li></ol>' +
+      '<p style="color:#94a3b8;font-size:11px;margin-top:8px">⚠️ Pastikan link dibuka di <b>Chrome</b>, bukan dari WhatsApp/IG.</p>';
+  }
+  document.getElementById('guideModal').classList.add('show');
+}
+function closeGuide(){ document.getElementById('guideModal').classList.remove('show'); }
+function copyLink(){
+  navigator.clipboard.writeText(ADMIN_URL).then(() => showToast('✅ Link disalin!'));
+}
+
+// ===== HELPER =====
 function reloadApp(){
   const f = document.getElementById('appFrame');
   document.getElementById('splash').classList.remove('hide');
-  f.src = f.src;
-  setTimeout(hideSplash, 4000);
+  f.src = f.src; setTimeout(hideSplash, 4000);
 }
 function hideSplash(){ document.getElementById('splash').classList.add('hide'); }
 function showToast(msg){
