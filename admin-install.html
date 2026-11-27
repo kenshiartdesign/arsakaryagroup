@@ -13,7 +13,8 @@
 <meta name="apple-mobile-web-app-title" content="ARSA Admin">
 <meta name="application-name" content="ARSA Admin">
 <link rel="manifest" href="manifest-admin.json">
-<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSIjMGUxMjA5Ii8+PGNpcmNsZSBjeD0iOTAiIGN5PSI3NSIgcj0iNDUiIGZpbGw9IiNmNTllMGIiLz48dGV4dCB4PSI5MCIgeT0iODciIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI0NCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiMwMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkE8L3RleHQ+PHRleHQgeD0iOTAiIHk9IjE1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iI2Y1OWUwYiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QURNSU48L3RleHQ+PC9zdmc+">
+<link rel="apple-touch-icon" href="./logo-AKI.png">
+<link rel="icon" type="image/png" href="./logo-AKI.png">
 
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -33,10 +34,9 @@ body.standalone #appFrame { top:0 !important; }
 .brand { display:flex; align-items:center; gap:10px; min-width:0; }
 .brand-icon {
   width:36px; height:36px; border-radius:10px;
-  background:linear-gradient(135deg,#f59e0b,#d97706);
-  display:flex; align-items:center; justify-content:center;
-  font-weight:900; font-size:18px; color:#000;
-  box-shadow:0 2px 8px rgba(245,158,11,0.4);
+  object-fit:contain; background:#0a0f0d;
+  box-shadow:0 2px 8px rgba(245,158,11,0.35);
+  border:1px solid rgba(251,191,36,0.25);
 }
 .brand-text { display:flex; flex-direction:column; }
 .brand-text .name { font-weight:800; font-size:14px; color:#fbbf24; letter-spacing:0.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -67,12 +67,10 @@ body.standalone #appFrame { top:0 !important; }
 #splash.hide { opacity:0; pointer-events:none; }
 .splash-icon {
   width:80px; height:80px; border-radius:20px;
-  background:linear-gradient(135deg,#f59e0b,#d97706);
-  display:flex; align-items:center; justify-content:center;
-  font-weight:900; font-size:36px; color:#000;
+  object-fit:contain;
   box-shadow:0 8px 32px rgba(245,158,11,0.4);
   animation:float 2.5s ease-in-out infinite;
-}
+}}
 @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
 #splash .title { color:#fbbf24; font-weight:800; font-size:16px; letter-spacing:2px; text-transform:uppercase; }
 #splash .subtitle { color:#94a3b8; font-size:11px; letter-spacing:3px; text-transform:uppercase; margin-top:-8px; }
@@ -114,7 +112,7 @@ body.standalone #appFrame { top:0 !important; }
 <!-- Header -->
 <div id="topBar">
   <div class="brand">
-    <div class="brand-icon">A</div>
+    <img src="./logo-AKI.png" alt="ARSA" class="brand-icon">
     <div class="brand-text">
       <span class="name">ARSA ADMIN</span>
       <span class="sub">Command Center</span>
@@ -128,7 +126,7 @@ body.standalone #appFrame { top:0 !important; }
 
 <!-- Splash loading -->
 <div id="splash">
-  <div class="splash-icon">A</div>
+  <img src="./logo-AKI.png" alt="ARSA" class="splash-icon">
   <div class="title">ARSA ADMIN</div>
   <div class="subtitle">Command Center</div>
   <div class="spinner"></div>
