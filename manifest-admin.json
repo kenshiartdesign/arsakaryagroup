@@ -1,28 +1,26 @@
 {
-  "name": "ARSA KARYA - Admin Panel",
-  "short_name": "ARSA ADMIN",
+  "id": "./admin-install.html",
+  "name": "ARSA Admin - Command Center",
+  "short_name": "ARSA Admin",
   "description": "Dashboard Admin & HRD ARSA KARYA GROUP",
   "start_url": "./admin-install.html",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#050806",
-  "theme_color": "#f59e0b",
+  "theme_color": "#fbbf24",
   "categories": ["business", "productivity"],
   "lang": "id-ID",
   "icons": [
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjQwIiBmaWxsPSIjMGUxMjA5Ii8+PGNpcmNsZSBjeD0iOTYiIGN5PSI4MCIgcj0iNTAiIGZpbGw9IiNmNTllMGIiLz48dGV4dCB4PSI5NiIgeT0iOTIiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSI0OCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IiMwMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkE8L3RleHQ+PHRleHQgeD0iOTYiIHk9IjE2MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjIwIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iI2Y1OWUwYiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QURNSU48L3RleHQ+PC9zdmc+",
+      "src": "https://lh3.googleusercontent.com/d/1PfAOVH8gTd2QK4ayJy9yhF21EFIQ__JJ",
       "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwMCIgZmlsbD0iIzBlMTIwOSIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjIxNiIgcj0iMTMwIiBmaWxsPSIjZjU5ZTBiIi8+PHRleHQgeD0iMjU2IiB5PSIyNDgiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMjAiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSIjMDAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5BPC90ZXh0Pjx0ZXh0IHg9IjI1NiIgeT0iNDIwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iNTAiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSIjZjU5ZTBiIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5BRE1JTjwvdGV4dD48L3N2Zz4=",
+      "src": "https://lh3.googleusercontent.com/d/1PfAOVH8gTd2QK4ayJy9yhF21EFIQ__JJ",
       "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }
