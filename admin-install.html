@@ -19,7 +19,7 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 html, body { height:100%; background:#050806; font-family:system-ui,-apple-system,sans-serif; overflow:hidden; }
 
-/* Header bar */
+/* Header bar (hanya tampil saat belum standalone) */
 #topBar {
   position:fixed; top:0; left:0; right:0; z-index:100;
   background:linear-gradient(135deg,#1a1f1c,#0d120f);
@@ -39,7 +39,7 @@ body.standalone #appFrame { top:0 !important; }
   box-shadow:0 2px 8px rgba(245,158,11,0.4);
 }
 .brand-text { display:flex; flex-direction:column; }
-.brand-text .name { font-weight:800; font-size:14px; color:#fbbf24; letter-spacing:0.5px; }
+.brand-text .name { font-weight:800; font-size:14px; color:#fbbf24; letter-spacing:0.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .brand-text .sub { font-size:9px; color:#94a3b8; letter-spacing:1px; text-transform:uppercase; }
 
 .actions { display:flex; gap:8px; flex-shrink:0; }
@@ -134,7 +134,7 @@ body.standalone #appFrame { top:0 !important; }
   <div class="spinner"></div>
 </div>
 
-<!-- App iframe -->
+<!-- App iframe (load admin panel dari GAS) -->
 <iframe id="appFrame" 
   src="https://script.google.com/macros/s/AKfycbypofLYPOd7q_SBKEx7_eYXktqRp9b8cPNO4hO1yUE4BdTInnAuHRHN-LpGCqMzm2RM/exec?page=admin"
   allow="camera; microphone; geolocation; fullscreen"
@@ -166,7 +166,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// ===== 2. DETEKSI STANDALONE =====
+// ===== 2. DETEKSI STANDALONE (sudah di-install) =====
 function checkStandalone() {
   const standalone = window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true;
