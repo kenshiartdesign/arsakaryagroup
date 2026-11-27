@@ -2,11 +2,15 @@
   "name": "ARSA KARYA - Admin Panel",
   "short_name": "ARSA Admin",
   "description": "Dashboard Admin & HRD ARSA KARYA GROUP",
-  "start_url": "https://script.google.com/macros/s/AKfycbypofLYPOd7q_SBKEx7_eYXktqRp9b8cPNO4hO1yUE4BdTInnAuHRHN-LpGCqMzm2RM/exec?page=admin",
+  "start_url": "./admin-install.html",
+  "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#050806",
   "theme_color": "#f59e0b",
+  "categories": ["business", "productivity"],
+  "lang": "id-ID",
   "icons": [
     {
       "src": "https://lh3.googleusercontent.com/d/1PfAOVH8gTd2QK4ayJy9yhF21EFIQ__JJ",
